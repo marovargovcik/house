@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Style gate: formatting, lint, and types must be clean before a commit lands.
+# Enable per clone with: git config core.hooksPath .githooks
+set -uo pipefail
+
+failed=0
+
+uv run ruff format --check . || { echo "  -> fix: uv run ruff format ."; failed=1; }
+uv run ruff check .          || { echo "  -> fix: uv run ruff check --fix ."; failed=1; }
+uv run mypy .                || failed=1
+
+if [[ $failed -ne 0 ]]; then
+  echo
+  echo "commit aborted (bypass with: git commit --no-verify)" >&2
+  exit 1
+fi
