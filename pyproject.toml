@@ -1,0 +1,52 @@
+[project]
+name = "house"
+version = "0.1.0"
+description = "Roof, attic, and excavation estimates for a self-build house on a sloped plot"
+readme = "README.md"
+authors = [
+    { name = "Marek Vargovčík", email = "mvk@famly.co" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "numpy>=2.5.2",
+    "pandas>=3.0.5",
+    "scipy>=1.18.1",
+]
+
+[project.scripts]
+house = "house.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pandas-stubs>=3.0.5.260730",
+    "pytest>=9.1.1",
+    "ruff>=0.16.4",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# Extends ruff's defaults (which already cover pyflakes, isort, pyupgrade, and
+# bugbear) rather than replacing them — `select` here would *narrow* coverage.
+extend-select = [
+    "ANN",  # missing annotations — CLAUDE.md makes type hints mandatory
+    "N",    # pep8 naming
+    "NPY",  # numpy-specific correctness
+    "RUF",  # ruff-specific rules
+    "SIM",  # simplification
+]
+# E501 stays off: the formatter owns line length, and enabling both makes them
+# fight over strings and comments the formatter cannot split.
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
