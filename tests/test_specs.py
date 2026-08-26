@@ -2,7 +2,7 @@
 
 import pytest
 
-from house.core.specs import AtticSpec, RoofSpec
+from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
 
 
 @pytest.mark.parametrize("pitch_deg", [0.0, 90.0, -5.0])
@@ -22,3 +22,21 @@ def test_h_min_has_no_default() -> None:
     """
     with pytest.raises(TypeError):
         AtticSpec()  # type: ignore[call-arg]
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf")])
+def test_non_finite_dimensions_are_rejected(bad: float) -> None:
+    """NaN compares False against everything, so a bare `<= 0` guard waves it
+    through and it then turns every downstream number into NaN with nothing
+    pointing at where it entered."""
+    with pytest.raises(ValueError, match="footprint"):
+        HouseSpec(width=bad, length=10.0)
+    with pytest.raises(ValueError, match="h_min"):
+        AtticSpec(h_min=bad)
+
+
+def test_empty_layer_stack_is_rejected() -> None:
+    """An empty stack prices roofing at 0 and still prints a plausible total next
+    to real krov and gutter figures — a whole cost category missing in silence."""
+    with pytest.raises(ValueError, match="layers"):
+        CostSpec(layers=(), krov_eur_per_m2=60.0, gutter_eur_per_m=30.0)

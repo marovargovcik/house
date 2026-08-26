@@ -6,7 +6,22 @@ particular `0 < pitch_deg < 90` is what keeps `tan` and `1 / cos` total for
 every caller, so no calculation needs its own guard.
 """
 
+import math
 from dataclasses import dataclass
+
+
+def _is_positive(value: float) -> bool:
+    """Finite and above zero.
+
+    The `isfinite` half is the point: NaN compares False against everything, so a
+    bare `value <= 0` guard lets NaN through and it then poisons every downstream
+    number with no hint of where it entered.
+    """
+    return math.isfinite(value) and value > 0
+
+
+def _is_non_negative(value: float) -> bool:
+    return math.isfinite(value) and value >= 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,7 +32,7 @@ class HouseSpec:
     length: float
 
     def __post_init__(self) -> None:
-        if self.width <= 0 or self.length <= 0:
+        if not (_is_positive(self.width) and _is_positive(self.length)):
             raise ValueError(
                 f"footprint must be positive, got {self.width} x {self.length} m"
             )
@@ -40,7 +55,10 @@ class RoofSpec:
             raise ValueError(
                 f"pitch must be within (0, 90) degrees, got {self.pitch_deg}"
             )
-        if self.overhang_eave < 0 or self.overhang_gable < 0:
+        if not (
+            _is_non_negative(self.overhang_eave)
+            and _is_non_negative(self.overhang_gable)
+        ):
             raise ValueError(
                 f"overhangs must be non-negative, got eave {self.overhang_eave} m, "
                 f"gable {self.overhang_gable} m"
@@ -60,9 +78,9 @@ class AtticSpec:
     knee_height: float = 0.0
 
     def __post_init__(self) -> None:
-        if self.h_min <= 0:
+        if not _is_positive(self.h_min):
             raise ValueError(f"h_min must be positive, got {self.h_min} m")
-        if self.knee_height < 0:
+        if not _is_non_negative(self.knee_height):
             raise ValueError(
                 f"knee wall height must be non-negative, got {self.knee_height} m"
             )
@@ -76,7 +94,7 @@ class RoofingLayer:
     eur_per_m2: float
 
     def __post_init__(self) -> None:
-        if self.eur_per_m2 < 0:
+        if not _is_non_negative(self.eur_per_m2):
             raise ValueError(f"{self.name}: rate must be non-negative")
 
 
@@ -94,7 +112,15 @@ class CostSpec:
     gutter_eur_per_m: float
 
     def __post_init__(self) -> None:
-        if self.krov_eur_per_m2 < 0 or self.gutter_eur_per_m < 0:
+        if not self.layers:
+            raise ValueError(
+                "layers must not be empty — an empty stack prices roofing at 0 "
+                "and hides a whole cost category inside a plausible total"
+            )
+        if not (
+            _is_non_negative(self.krov_eur_per_m2)
+            and _is_non_negative(self.gutter_eur_per_m)
+        ):
             raise ValueError("cost rates must be non-negative")
 
     @property
