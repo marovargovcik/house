@@ -255,7 +255,7 @@ names and bad attribute access without arguing with mypy about inference.
 - **As you type** — Pylance type-checks in the editor. It is **advisory only**;
   see [Two type checkers](#two-type-checkers-mypy-wins).
 - **On commit** — `.githooks/pre-commit` runs `ruff format --check`, `ruff check`,
-  and `mypy` over the whole tree and aborts the commit on any failure. It checks
+  `mypy`, and `pytest` over the whole tree and aborts the commit on any failure. It checks
   the working tree, not just staged files, so an unrelated dirty file will block
   the commit. Bypass deliberately with `git commit --no-verify`.
 
