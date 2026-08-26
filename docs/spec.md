@@ -82,7 +82,8 @@ Inputs: `width`, `length`, `pitch θ`, `roofing_type` (with its €/m²), plus a
 **eaves/gable overhang** parameter (real extra material, easy to forget).
 
 - Ridge height above wall top: `(width / 2) * tan(θ)`
-- Sloped rafter length per side: `(width / 2) / cos(θ)`
+- Sloped rafter length per side: `(width / 2 + o_eave) / cos(θ)` — the rafter
+  runs out over the eave overhang, so the overhang is part of its length
 - **Roof surface area:**
   `(length + 2*o_gable) * (width + 2*o_eave) / cos(θ)`
 
@@ -105,8 +106,12 @@ The `width / cos(θ)` term already covers both roof planes: each half is
 
 Material cost = area × €/m² per layer (roofing sheet, membrane, battens,
 insulation), charged on **gross** area including the overhang — a deliberate
-over-estimate, see `decisions.md`. Timber cost as a function of rafter length ×
-count.
+over-estimate, see `decisions.md`.
+
+Krov (the load-bearing structure) is priced the same way — €/m² of roof surface,
+a ballpark that avoids guessing a rafter count and spacing we have not designed
+yet. Rafter length is reported alongside it for timber ordering, not used in the
+cost.
 
 Sanity checks to pin in tests:
 - flat-ish roof (θ → 0) → area ≈ footprint
