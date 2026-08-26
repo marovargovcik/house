@@ -3,8 +3,6 @@ one card per swept row, drawn to a shared scale, and no external assets."""
 
 from pathlib import Path
 
-import pandas as pd
-
 from house.core import sweep
 from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
 from house.interpreters import to_html, to_svg
@@ -13,7 +11,7 @@ COSTS = CostSpec(eur_per_m2=110.0)
 OVERHANGS = {"overhang_eave": 0.6, "overhang_gable": 0.4}
 
 
-def _table() -> pd.DataFrame:
+def _rows() -> tuple[sweep.SweepRow, ...]:
     return sweep.width_by_pitch(
         widths=(9.0, 11.0),
         pitches_deg=(25.0, 45.0),
@@ -32,10 +30,10 @@ def _table() -> pd.DataFrame:
 
 
 def test_report_has_a_card_per_row_and_no_external_assets(tmp_path: Path) -> None:
-    table = _table()
+    rows = _rows()
     path = tmp_path / "roof.html"
     to_html.write_html(
-        table,
+        rows,
         length=10.0,
         attic=AtticSpec(
             h_min=1.9,

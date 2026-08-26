@@ -118,6 +118,25 @@ here first.
   so `AtticSpec` keeps `float | None` (absence genuinely is not a height) and
   still rejects a collar at or below the wall top.
 
+- **The sweep returns frozen dataclasses, not a DataFrame; Module 1 has no
+  runtime dependencies.** `pandas` was only ever a container here — the sweep
+  built dicts, wrapped them, and the interpreters unwrapped them again — so a
+  named `SweepRow` is both what this project reaches for anyway and one less
+  thing between the numbers and a reader. `numpy` and `scipy` were declared but
+  imported nowhere. All three are gone; `uv add` brings numpy and scipy back when
+  Module 2's grid work actually imports them.
+
+  The payoff beyond tidiness: the whole Module 1 pipeline is `math` and
+  `dataclasses`, so it runs on a bare CPython — including a WASM build in the
+  browser, which is the cheapest path to an interactive sweep with sliders
+  instead of flags. **Do not** add a runtime dependency to Module 1 without
+  weighing that.
+
+- **Interpreters split building from writing.** `render_html` / `write_html`,
+  `render_csv` / `write_csv`. The pure function returns the string; the wrapper
+  is the only line that touches disk. Keeps the effect at the very edge and lets
+  a caller with nowhere to write still have the output.
+
 - **`h_min` is a required parameter with no default.** Prevents an unverified
   value silently ending up in a result. Sweeps run at 1.9 m explicitly until the
   Slovak *obytná plocha* norm is confirmed. **Do not** add a default value until

@@ -24,7 +24,7 @@ from pathlib import Path
 
 from house.core import sweep
 from house.core.specs import AtticSpec, CostSpec
-from house.interpreters import to_csv, to_html
+from house.interpreters import to_csv, to_html, to_text
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -122,7 +122,7 @@ def main() -> None:
             collar_above_wall_top=collar,
         )
         costs = CostSpec(eur_per_m2=args.eur_per_m2)
-        table = sweep.width_by_pitch(
+        rows = sweep.width_by_pitch(
             widths=args.widths,
             pitches_deg=args.pitches,
             length=args.length,
@@ -135,15 +135,15 @@ def main() -> None:
         parser.error(str(invalid))
 
     print(f"h_min = {attic.h_min:g} m, roof at {costs.eur_per_m2:g} EUR/m2 all-in\n")
-    print(table.round(2).to_string(index=False))
+    print(to_text.render_table(rows))
 
     if args.csv_path is not None:
-        to_csv.write_csv(table, args.csv_path)
+        to_csv.write_csv(rows, args.csv_path)
         print(f"\nwrote {args.csv_path}")
 
     if args.html is not None:
         to_html.write_html(
-            table,
+            rows,
             length=args.length,
             attic=attic,
             costs=costs,

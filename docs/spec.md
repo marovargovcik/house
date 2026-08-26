@@ -403,9 +403,13 @@ the `Z_ground(x, y)` seam, not a bolt-on.
 
 ## 6. Environment
 
-- Local Python interpreter available; `pip` available for dependencies.
-- Likely dependencies: `numpy` (grid math), `pandas` (sweeps → tables/CSV),
-  `pytest` (pin the numbers), `scipy` (future survey-point interpolation).
+- Local Python interpreter available; `uv` manages the environment.
+- **Module 1 has no runtime dependencies** — `math` and `dataclasses` only. That
+  is not an accident of scope: it keeps the whole pipeline runnable on a bare
+  CPython, including a WASM build in the browser, which is the cheapest route to
+  an interactive version of the sweep.
+- `numpy` (grid math) and `scipy` (survey-point interpolation) return with
+  Module 2. `pytest`, `ruff` and `mypy` are dev-only.
 
 ## 7. Status / next steps
 

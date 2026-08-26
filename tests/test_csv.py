@@ -1,21 +1,56 @@
 """The CSV interpreter must hand the sweep's numbers on unchanged."""
 
+from dataclasses import replace
 from pathlib import Path
 
-import pandas as pd
-
+from house.core.sweep import SweepRow, column_names
 from house.interpreters import to_csv
 
+ROW = SweepRow(
+    width_m=9.0,
+    pitch_deg=30.0,
+    roof_area_m2=127.20181130785834,
+    ridge_above_wall_top_m=2.598076211353315,
+    clear_ridge_m=2.0516660498395396,
+    usable_width_m=0.525386608210713,
+    usable_area_m2=5.25386608210713,
+    usable_fraction=0.058376289801190334,
+    total_eur=13992.199243864417,
+    eur_per_usable_m2=2663.2196225018106,
+)
 
-def test_csv_keeps_full_precision_and_drops_the_index(tmp_path: Path) -> None:
-    table = pd.DataFrame(
-        [{"width_m": 9.0, "eur_per_usable_m2": 542.2933587501234}],
-        index=[7],
-    )
+
+def test_csv_keeps_full_precision() -> None:
+    """Rounding belongs to whatever reads the CSV, not to the record of it, so
+    every figure must survive the round trip bit for bit."""
+    lines = to_csv.render_csv([ROW]).splitlines()
+
+    assert lines[0] == ",".join(column_names())
+    assert [float(cell) for cell in lines[1].split(",")] == [
+        9.0,
+        30.0,
+        127.20181130785834,
+        2.598076211353315,
+        2.0516660498395396,
+        0.525386608210713,
+        5.25386608210713,
+        0.058376289801190334,
+        13992.199243864417,
+        2663.2196225018106,
+    ]
+
+
+def test_no_habitable_attic_leaves_the_cell_empty() -> None:
+    """NaN reaches the CSV where no attic is habitable. It goes out as an empty
+    cell, not the text "nan", which a spreadsheet would read as a string and turn
+    the whole numeric column into text."""
+    unusable = replace(ROW, usable_area_m2=0.0, eur_per_usable_m2=float("nan"))
+    assert to_csv.render_csv([unusable]).splitlines()[1].endswith(",")
+
+
+def test_write_csv_is_render_csv_on_disk(tmp_path: Path) -> None:
+    """The split exists so a caller with nowhere to write can still have the
+    numbers; the two must not drift."""
     path = tmp_path / "sweep.csv"
-
-    to_csv.write_csv(table, path)
-
-    assert path.read_text().splitlines()[0] == "width_m,eur_per_usable_m2"
-    reloaded = pd.read_csv(path)
-    assert reloaded["eur_per_usable_m2"][0] == 542.2933587501234
+    to_csv.write_csv([ROW], path)
+    assert path.read_text(encoding="utf-8") == to_csv.render_csv([ROW])

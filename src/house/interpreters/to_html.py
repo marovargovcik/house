@@ -1,24 +1,24 @@
-"""Sweep table → a self-contained HTML report in Slovak, one drawn card per row.
+"""Sweep rows → a self-contained HTML report in Slovak, one drawn card per row.
 
 The report is what goes to the projektant and the builders, so the whole page —
 prose, dimension labels, table headers, number formatting — is Slovak. The core
 stays in English: only this boundary translates (`CLAUDE.md`, units & vocabulary).
 
-An interpreter: the only place the report touches the disk. Each card's drawing
+Split in two: `render_html` builds the page and `write_html` puts it on disk, so
+a caller with nowhere to write can still have the page. Each card's drawing
 is rebuilt from that row's own `width_m` and `pitch_deg`, so the picture and the
 numbers printed beside it are the same configuration by construction — there is
 no second source of truth to fall out of step.
 """
 
 import math
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from dataclasses import asdict
 from pathlib import Path
-from typing import Any
-
-import pandas as pd
 
 from house.core import attic as attic_calc
 from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
+from house.core.sweep import SweepRow
 from house.interpreters import sk, to_svg
 
 _COLUMNS: tuple[tuple[str, str, str], ...] = (
@@ -70,20 +70,21 @@ def _with_unit(unit: str, value: float) -> str:
 
 
 def _card(
-    record: dict[Hashable, Any],
+    row: SweepRow,
     length: float,
     attic: AtticSpec,
     overhang_eave: float,
     overhang_gable: float,
 ) -> str:
-    house = HouseSpec(width=float(record["width_m"]), length=length)
+    house = HouseSpec(width=row.width_m, length=length)
+    values = asdict(row)
     roof = RoofSpec(
-        pitch_deg=float(record["pitch_deg"]),
+        pitch_deg=row.pitch_deg,
         overhang_eave=overhang_eave,
         overhang_gable=overhang_gable,
     )
     numbers = "".join(
-        f"<div><dt>{label}</dt><dd>{_with_unit(unit, float(record[column]))}</dd></div>"
+        f"<div><dt>{label}</dt><dd>{_with_unit(unit, float(values[column]))}</dd></div>"
         for column, label, unit in _CARD_ROWS
     )
     return (
@@ -97,7 +98,7 @@ def _card(
 
 
 def _sections(
-    records: Sequence[dict[Hashable, Any]],
+    rows: Sequence[SweepRow],
     length: float,
     attic: AtticSpec,
     overhang_eave: float,
@@ -105,16 +106,15 @@ def _sections(
 ) -> str:
     """Cards grouped by width, so reading down a group is a pure pitch sweep."""
     widths: list[float] = []
-    for record in records:
-        width = float(record["width_m"])
-        if width not in widths:
-            widths.append(width)
+    for row in rows:
+        if row.width_m not in widths:
+            widths.append(row.width_m)
     return "".join(
         f"<h2>šírka {sk.trimmed(width)} m</h2><div class='grid'>"
         + "".join(
-            _card(record, length, attic, overhang_eave, overhang_gable)
-            for record in records
-            if float(record["width_m"]) == width
+            _card(row, length, attic, overhang_eave, overhang_gable)
+            for row in rows
+            if row.width_m == width
         )
         + "</div>"
         for width in widths
@@ -188,12 +188,11 @@ def _assumptions(
     return "".join(f"<li>{item}</li>" for item in items)
 
 
-def _table(records: Sequence[dict[Hashable, Any]]) -> str:
+def _table(rows: Sequence[SweepRow]) -> str:
     """The sweep as a table, formatted exactly as the cards format it.
 
-    Hand-built rather than `DataFrame.to_html` so the headers carry the Slovak
-    names and units from `_COLUMNS`, and the figures match the cards instead of
-    showing pandas' raw floats beside them.
+    Headers carry the Slovak names and units from `_COLUMNS`, and the figures go
+    through the same formatter the cards use, so the two never disagree.
     """
     head = "".join(
         f"<th>{label}{f' ({unit})' if unit else ''}</th>" for _, label, unit in _COLUMNS
@@ -201,17 +200,35 @@ def _table(records: Sequence[dict[Hashable, Any]]) -> str:
     body = "".join(
         "<tr>"
         + "".join(
-            f"<td>{_number(unit, float(record[column]))}</td>"
+            f"<td>{_number(unit, float(values[column]))}</td>"
             for column, _, unit in _COLUMNS
         )
         + "</tr>"
-        for record in records
+        for values in (asdict(row) for row in rows)
     )
     return f'<table class="sweep"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>'
 
 
+def render_html(
+    rows: Sequence[SweepRow],
+    length: float,
+    attic: AtticSpec,
+    costs: CostSpec,
+    overhang_eave: float,
+    overhang_gable: float,
+) -> str:
+    """The sweep as a drawn report. Self-contained: no external assets."""
+    return _PAGE.format(
+        style=_STYLE + to_svg.STYLE,
+        defs=to_svg.defs_svg(),
+        assumptions=_assumptions(length, attic, costs, overhang_eave, overhang_gable),
+        sections=_sections(rows, length, attic, overhang_eave, overhang_gable),
+        table=_table(rows),
+    )
+
+
 def write_html(
-    table: pd.DataFrame,
+    rows: Sequence[SweepRow],
     length: float,
     attic: AtticSpec,
     costs: CostSpec,
@@ -219,16 +236,10 @@ def write_html(
     overhang_gable: float,
     path: Path,
 ) -> None:
-    """Write the sweep as a drawn report. Self-contained: no external assets."""
-    records: list[dict[Hashable, Any]] = table.to_dict(orient="records")
-    page = _PAGE.format(
-        style=_STYLE + to_svg.STYLE,
-        defs=to_svg.defs_svg(),
-        assumptions=_assumptions(length, attic, costs, overhang_eave, overhang_gable),
-        sections=_sections(records, length, attic, overhang_eave, overhang_gable),
-        table=_table(records),
+    path.write_text(
+        render_html(rows, length, attic, costs, overhang_eave, overhang_gable),
+        encoding="utf-8",
     )
-    path.write_text(page, encoding="utf-8")
 
 
 _STYLE = """

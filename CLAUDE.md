@@ -83,6 +83,10 @@ here, not less.
 - **IO and rendering live in `interpreters/` and entry points only.** JSON export,
   spreadsheet export, a future 3D viewer — these *consume* what the core produces.
   `core/` never imports an interpreter, a plotting library, or anything that does IO.
+- **An interpreter splits building from writing.** `render_html` / `write_html`,
+  `render_csv` / `write_csv`: the string is built by a pure function and one thin
+  wrapper puts it on disk. A caller with nowhere to write — a test, a browser
+  runtime — gets the output without the effect.
 - **All terrain access goes through `Z_ground(x, y)`.** No module inlines terrain
   assumptions. The `y` parameter stays in the signature even while today's model
   ignores it — this is what makes swapping in survey-point terrain a body-only
@@ -113,9 +117,11 @@ src/house/
     views.py       # section/plan coordinates for drawings — numbers, not pixels
   interpreters/    # consume core output; IO lives here
     to_json.py
-    csv.py         # sweep table -> CSV
+    to_csv.py      # sweep rows -> CSV
+    to_text.py     # sweep rows -> fixed-width table for a terminal
     to_svg.py      # views -> SVG (string building, no IO)
     to_html.py     # sweep + drawings -> one self-contained page
+    sk.py          # Slovak number formatting for the report
     to_scene.py    # later — geometry → JSON for a JS/Three.js viewer
 tests/             # hand-checked cases pinning every output; mirrors src/house/
 docs/
@@ -168,8 +174,15 @@ Few absolute rules, but watch for these pitfalls:
 
 ## Python conventions
 
-**Tech stack**: Python 3.14+ (pinned in `.python-version`), `numpy` (grid math),
-`pandas` (sweeps → tables/CSV), `scipy` (future survey-point interpolation).
+**Tech stack**: Python 3.14+ (pinned in `.python-version`) and **nothing else at
+runtime** — Module 1 is `math` and `dataclasses` end to end. `numpy` (grid math)
+and `scipy` (survey-point interpolation) come back with Module 2's excavation
+work; add them with `uv add` when a module actually imports them, not before.
+
+> [!NOTE]
+> The empty `dependencies` list is deliberate, not an oversight. It is what lets
+> the whole pipeline run on a bare CPython — including a browser runtime — so
+> don't reach for a third-party package where the standard library will do.
 
 **Toolchain** — the 2026-consolidated stack, mostly one company (Astral). All
 tool configuration belongs in `pyproject.toml`, never in per-tool dotfiles:
@@ -244,9 +257,9 @@ names and bad attribute access without arguing with mypy about inference.
   costs nothing.
 - Define related constructors/factories as `@classmethod` or module-level functions
   on/near the type, not scattered.
-- Prefer standard-library and `numpy`/`pandas` idioms over hand-rolled loops for
-  numeric work — but keep the calculation legible and auditable (this is a
-  trust-the-numbers project).
+- Prefer standard-library idioms over hand-rolled loops, and `numpy` once
+  Module 2 brings it back for grid work — but keep the calculation legible and
+  auditable (this is a trust-the-numbers project).
 - Imports at the top of the file; no inline imports except to break a genuine cycle
   (and prefer restructuring over that).
 - Absolute imports within the package.
