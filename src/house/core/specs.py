@@ -44,11 +44,15 @@ class RoofSpec:
 
     Both overhangs are horizontal projections, and they are *not*
     interchangeable — see `docs/decisions.md`.
+
+    Neither carries a default. They are measured quantities that change the roof
+    area and the timber order, and a default would let one reach a result without
+    anyone choosing it — the same rule `AtticSpec` follows.
     """
 
     pitch_deg: float
-    overhang_eave: float = 0.6
-    overhang_gable: float = 0.4
+    overhang_eave: float
+    overhang_gable: float
 
     def __post_init__(self) -> None:
         if not 0 < self.pitch_deg < 90:

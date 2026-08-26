@@ -10,6 +10,7 @@ from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
 from house.interpreters import to_html, to_svg
 
 COSTS = CostSpec(eur_per_m2=110.0)
+OVERHANGS = {"overhang_eave": 0.6, "overhang_gable": 0.4}
 
 
 def _table() -> pd.DataFrame:
@@ -51,7 +52,7 @@ def test_report_has_a_card_per_row_and_no_external_assets(tmp_path: Path) -> Non
 def test_a_wider_house_is_drawn_wider_at_the_same_scale() -> None:
     """Comparability by eye is the reason the page exists — pin it."""
     attic = AtticSpec(h_min=1.9, roof_buildup=0.30, floor_buildup=0.20)
-    roof = RoofSpec(pitch_deg=30.0)
+    roof = RoofSpec(pitch_deg=30.0, **OVERHANGS)
     narrow = to_svg.card_svg(HouseSpec(width=9.0, length=10.0), roof, attic)
     wide = to_svg.card_svg(HouseSpec(width=11.0, length=10.0), roof, attic)
 
@@ -69,7 +70,7 @@ def test_a_pitch_with_no_headroom_still_renders() -> None:
     """
     markup = to_svg.card_svg(
         HouseSpec(width=9.0, length=10.0),
-        RoofSpec(pitch_deg=15.0),
+        RoofSpec(pitch_deg=15.0, **OVERHANGS),
         AtticSpec(h_min=1.9, roof_buildup=0.30, floor_buildup=0.20),
     )
     assert "nikde nie je výška 1,9 m" in markup

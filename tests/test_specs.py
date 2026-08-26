@@ -10,7 +10,7 @@ def test_pitch_outside_the_open_interval_is_rejected(pitch_deg: float) -> None:
     """0 < pitch < 90 is what makes tan and 1 / cos total for every calculation
     downstream, so the guard has to be here rather than in each function."""
     with pytest.raises(ValueError, match="pitch"):
-        RoofSpec(pitch_deg=pitch_deg)
+        RoofSpec(pitch_deg=pitch_deg, overhang_eave=0.6, overhang_gable=0.4)
 
 
 def test_headroom_inputs_have_no_defaults() -> None:

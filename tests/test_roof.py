@@ -9,6 +9,7 @@ from house.core.specs import CostSpec, HouseSpec, RoofSpec
 
 HOUSE = HouseSpec(width=9.0, length=10.0)
 BARE = {"overhang_eave": 0.0, "overhang_gable": 0.0}
+OVERHANGS = {"overhang_eave": 0.6, "overhang_gable": 0.4}
 COSTS = CostSpec(eur_per_m2=110.0)
 
 
@@ -35,7 +36,7 @@ def test_overhangs_are_wired_to_their_own_factors() -> None:
     is not square and the two overhangs differ — with either symmetry the wrong
     wiring passes. Zeroing both must recover the pre-overhang formula.
     """
-    at_30 = RoofSpec(pitch_deg=30.0, overhang_eave=0.6, overhang_gable=0.4)
+    at_30 = RoofSpec(pitch_deg=30.0, **OVERHANGS)
     swapped = RoofSpec(pitch_deg=30.0, overhang_eave=0.4, overhang_gable=0.6)
 
     assert roof.surface_area(HOUSE, at_30) == pytest.approx(127.2018, abs=1e-4)
@@ -50,13 +51,13 @@ def test_geometry_at_30_degrees() -> None:
 
     The gutter run is horizontal, so it must not move with pitch.
     """
-    geom = roof.geometry(HOUSE, RoofSpec(pitch_deg=30.0))
+    geom = roof.geometry(HOUSE, RoofSpec(pitch_deg=30.0, **OVERHANGS))
     assert geom.ridge_height == pytest.approx(2.5981, abs=1e-4)
     assert geom.rafter_length == pytest.approx(5.889, abs=1e-4)
     assert geom.gutter_run == pytest.approx(21.6)
-    assert roof.geometry(HOUSE, RoofSpec(pitch_deg=45.0)).gutter_run == pytest.approx(
-        21.6
-    )
+    assert roof.geometry(
+        HOUSE, RoofSpec(pitch_deg=45.0, **OVERHANGS)
+    ).gutter_run == pytest.approx(21.6)
 
 
 def test_cost_is_one_all_in_rate_charged_on_gross_area() -> None:
@@ -67,7 +68,7 @@ def test_cost_is_one_all_in_rate_charged_on_gross_area() -> None:
     fixes the deliberate over-estimate (docs/decisions.md), not just the
     multiplication.
     """
-    geom = roof.geometry(HOUSE, RoofSpec(pitch_deg=30.0))
+    geom = roof.geometry(HOUSE, RoofSpec(pitch_deg=30.0, **OVERHANGS))
     bare = roof.geometry(HOUSE, RoofSpec(pitch_deg=30.0, **BARE))
 
     assert roof.cost(geom, COSTS) == pytest.approx(13992.1992, abs=1e-3)

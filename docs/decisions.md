@@ -101,6 +101,20 @@ here first.
   as a width reduction. Ridge beams, purlins, and dormers are *not* modelled, so
   today's figures are the ceiling of what a pitch can deliver, not a promise.
 
+- **Measured inputs carry no defaults — in the specs or the entry point.** What
+  started as a rule for `h_min` now applies across the board: `RoofSpec`'s two
+  overhangs and `AtticSpec`'s build-ups take no defaults, and every CLI flag is
+  `required=True`. A default is a number that reaches a result without anyone
+  choosing it, and a default in the entry point puts back exactly what the core
+  refuses one layer out. The cost is a long command line; `README.md` carries the
+  current design's invocation, and the reasoning behind each figure lives in
+  these docs rather than beside the value.
+
+  Two deliberate exceptions, both because absence carries *meaning* rather than a
+  value: `AtticSpec.knee_height` defaults to 0 per the knee-wall decision above,
+  and `collar_above_wall_top` defaults to `None` because a roof with no collar
+  tie has no height to state. The report says which case it is either way.
+
 - **`h_min` is a required parameter with no default.** Prevents an unverified
   value silently ending up in a result. Sweeps run at 1.9 m explicitly until the
   Slovak *obytná plocha* norm is confirmed. **Do not** add a default value until
