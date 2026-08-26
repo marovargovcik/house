@@ -231,6 +231,9 @@ level sits on the upper shelf.
 - "I"-shape, **10–11 m wide** (plot is 20 m wide → ~9–10 m to spare across).
 - Long axis runs **along the slope** (down the 46 m direction).
 - **Front wall at x = 18 m**, extending toward the back (toward 46 m).
+- **25 m long.** The front wall at 18 m on a 46 m plot leaves 28 m to build
+  into, so the house runs 18–43 m with ~3 m to spare at the bottom edge. Module 1
+  sweeps width and pitch against this single fixed length.
 - So the front ~3 m of house (18–21 m) sits over the steep step → this is the
   garage, cutting up to ~2.5 m into the hill. Everything from 21 m back sits over
   near-flat ground close to garage-floor level → minimal digging there.

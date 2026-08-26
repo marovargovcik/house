@@ -17,7 +17,9 @@ from house.interpreters import csv, to_html
 # wide, long axis down the slope. 9 m is swept too as the low anchor the worked
 # examples in §3b use.
 WIDTHS = (9.0, 10.0, 11.0)
-LENGTH = 10.0
+# Front wall at x = 18 m on a 46 m plot leaves 28 m to build into, so 25 m runs
+# the house nearly to the lower shelf with ~3 m to spare (`docs/spec.md` §4b).
+LENGTH = 25.0
 PITCHES_DEG = (25.0, 30.0, 35.0, 40.0, 45.0)
 OVERHANG_EAVE = 0.6
 OVERHANG_GABLE = 0.4
