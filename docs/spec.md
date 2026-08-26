@@ -40,6 +40,7 @@ core/            # pure modules, depend only on spec dataclasses
   terrain.py     # Z_ground(x, y) — the terrain seam
   excavation.py  # excavation volume + max cut depth
   views.py       # section/plan coordinates for drawings
+  validate.py    # cross-spec input checks
 interpreters/
   to_json.py
   to_csv.py      # sweep rows → CSV

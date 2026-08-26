@@ -87,6 +87,13 @@ here, not less.
   `render_csv` / `write_csv`: the string is built by a pure function and one thin
   wrapper puts it on disk. A caller with nowhere to write — a test, a browser
   runtime — gets the output without the effect.
+- **Validation is layered, and the layer is decided by what the check can see.**
+  A field that is nonsense on its own is refused by its spec's `__post_init__`;
+  a *combination* that no single spec can see is reported by `core/validate.py`,
+  which the entry point runs before anything is computed. Specs raise (the value
+  is unusable); `validate` **returns** its problems (the entry point is what
+  decides a run stops). Past that boundary, inputs are trusted — don't add a
+  defensive clamp downstream for a shape validation already rules out.
 - **All terrain access goes through `Z_ground(x, y)`.** No module inlines terrain
   assumptions. The `y` parameter stays in the signature even while today's model
   ignores it — this is what makes swapping in survey-point terrain a body-only
@@ -115,6 +122,7 @@ src/house/
     terrain.py     # Z_ground(x, y) — the terrain seam
     excavation.py  # excavation volume + max cut depth
     views.py       # section/plan coordinates for drawings — numbers, not pixels
+    validate.py    # cross-spec checks — the ones no single spec can make
   interpreters/    # consume core output; IO lives here
     to_json.py
     to_csv.py      # sweep rows -> CSV

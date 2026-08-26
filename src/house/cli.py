@@ -22,7 +22,7 @@ reasoning behind each of those numbers is in `docs/spec.md` and
 import argparse
 from pathlib import Path
 
-from house.core import sweep
+from house.core import sweep, validate
 from house.core.specs import AtticSpec, CostSpec
 from house.interpreters import to_csv, to_html, to_text
 
@@ -107,12 +107,15 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    # The spec constructors are the validation boundary, so a bad flag surfaces
-    # as their message rather than a traceback — `parser.error` exits 2 with it.
     # 0 is how a required flag says "there is none". Anything else goes to the
     # spec unchanged, which rejects a collar at or below the wall top.
     collar = None if args.collar == 0 else args.collar
 
+    # Validation is the whole of the boundary, and it runs before anything is
+    # swept: the spec constructors reject a field that is nonsense on its own,
+    # and `validate` reports the combinations no single spec can see. Both
+    # surface as `parser.error` — exit 2 with the message — rather than a
+    # traceback. Past this point the inputs are trusted.
     try:
         attic = AtticSpec(
             h_min=args.h_min,
@@ -122,17 +125,28 @@ def main() -> None:
             collar_above_wall_top=collar,
         )
         costs = CostSpec(eur_per_m2=args.eur_per_m2)
-        rows = sweep.width_by_pitch(
+        problems = validate.sweep_problems(
             widths=args.widths,
             pitches_deg=args.pitches,
             length=args.length,
             attic=attic,
-            costs=costs,
             overhang_eave=args.overhang_eave,
             overhang_gable=args.overhang_gable,
         )
     except ValueError as invalid:
         parser.error(str(invalid))
+    if problems:
+        parser.error("; ".join(problems))
+
+    rows = sweep.width_by_pitch(
+        widths=args.widths,
+        pitches_deg=args.pitches,
+        length=args.length,
+        attic=attic,
+        costs=costs,
+        overhang_eave=args.overhang_eave,
+        overhang_gable=args.overhang_gable,
+    )
 
     print(f"h_min = {attic.h_min:g} m, roof at {costs.eur_per_m2:g} EUR/m2 all-in\n")
     print(to_text.render_table(rows))

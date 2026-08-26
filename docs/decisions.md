@@ -132,6 +132,28 @@ here first.
   instead of flags. **Do not** add a runtime dependency to Module 1 without
   weighing that.
 
+- **Validation is layered by what a check can see.** A spec's `__post_init__`
+  refuses a field that is nonsense on its own — that is where `h_min > 0`,
+  `0 < pitch < 90`, and *collar above the knee top* live, the last one because
+  both fields are `AtticSpec`'s own. A check needing two specs cannot go there:
+  2.4 m is a fine collar and 25° on a 9 m house is a fine roof, and there is no
+  such roof with such a collar in it. Those live in `core/validate.py`, which the
+  entry point runs after collecting every input and before computing anything.
+
+  Specs **raise** (the value itself is unusable); `validate` **returns** its
+  problems (a bad combination is a fact about the run, and the entry point is
+  what turns it into an exit code). The layer builds every spec the sweep will,
+  so `sweep.width_by_pitch` is handed inputs it can trust.
+
+  *Consequence:* **do not** add a defensive clamp downstream for a shape
+  validation already rules out — a collar poking through the roof was first
+  "fixed" by clamping it in `views`, which is dead code once the spec refuses the
+  input. A collar higher than the roof fails the **whole run**, naming the
+  offending (width, pitch) rows, rather than dropping them: a row for a house
+  nobody can build is not an answer, and the sweep's value rests on every row
+  being one. **Not** validated, deliberately: a pitch too shallow to stand under
+  and a collar too low to clear `h_min` are *results* the model already reports.
+
 - **Interpreters split building from writing.** `render_html` / `write_html`,
   `render_csv` / `write_csv`. The pure function returns the string; the wrapper
   is the only line that touches disk. Keeps the effect at the very edge and lets
