@@ -15,8 +15,20 @@ from house.core.specs import AtticSpec, HouseSpec, RoofSpec
 from house.core.views import Point
 
 HOUSE = HouseSpec(width=9.0, length=10.0)
-BARE = AtticSpec(h_min=1.9, roof_buildup=0.0, floor_buildup=0.0)
-BUILT = AtticSpec(h_min=1.9, roof_buildup=0.30, floor_buildup=0.20)
+BARE = AtticSpec(
+    h_min=1.9,
+    roof_buildup=0.0,
+    floor_buildup=0.0,
+    knee_height=0.0,
+    collar_above_wall_top=None,
+)
+BUILT = AtticSpec(
+    h_min=1.9,
+    roof_buildup=0.30,
+    floor_buildup=0.20,
+    knee_height=0.0,
+    collar_above_wall_top=None,
+)
 OVERHANGS = {"overhang_eave": 0.6, "overhang_gable": 0.4}
 NO_OVERHANG = {"overhang_eave": 0.0, "overhang_gable": 0.0}
 
@@ -86,7 +98,11 @@ def test_a_collar_caps_the_standing_room_flat() -> None:
     Leaving the apex in would draw standing room where a beam is.
     """
     kneed = AtticSpec(
-        h_min=1.9, roof_buildup=0.30, floor_buildup=0.20, collar_above_wall_top=2.5
+        h_min=1.9,
+        roof_buildup=0.30,
+        floor_buildup=0.20,
+        knee_height=0.0,
+        collar_above_wall_top=2.5,
     )
     section = views.section(HOUSE, RoofSpec(pitch_deg=45.0, **OVERHANGS), kneed)
 
@@ -101,7 +117,13 @@ def test_a_collar_caps_the_standing_room_flat() -> None:
 def test_knee_wall_lifts_the_apex_and_the_springing_point() -> None:
     """A 0.5 m nadmurovka raises the ridge one-for-one and widens the strip."""
     roof = RoofSpec(pitch_deg=30.0, **OVERHANGS)
-    kneed = AtticSpec(h_min=1.9, roof_buildup=0.30, floor_buildup=0.20, knee_height=0.5)
+    kneed = AtticSpec(
+        h_min=1.9,
+        roof_buildup=0.30,
+        floor_buildup=0.20,
+        knee_height=0.5,
+        collar_above_wall_top=None,
+    )
     plain = views.section(HOUSE, roof, BUILT)
     lifted = views.section(HOUSE, roof, kneed)
 

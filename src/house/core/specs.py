@@ -85,17 +85,22 @@ class AtticSpec:
       converts it to the vertical loss that headroom actually feels.
     - `floor_buildup` — **vertical** thickness of the attic floor above the wall
       top: structure, insulation, screed, covering.
-    - `knee_height` — nadmurovka; the slopes spring from its top.
+    - `knee_height` — nadmurovka; the slopes spring from its top. 0 for none.
     - `collar_above_wall_top` — underside of the collar tie (klieština) above the
       wall top, or `None` for a roof with no collar. See `attic.usable_width`
       for why this gates rather than reduces.
+
+    None of them defaults, `collar_above_wall_top` included: a roof with no collar
+    tie has to say `None` rather than leave it unsaid. The type stays a union
+    because absence is genuinely not a height — it is the entry point's job to
+    translate, not this one's.
     """
 
     h_min: float
     roof_buildup: float
     floor_buildup: float
-    knee_height: float = 0.0
-    collar_above_wall_top: float | None = None
+    knee_height: float
+    collar_above_wall_top: float | None
 
     def __post_init__(self) -> None:
         if not _is_positive(self.h_min):

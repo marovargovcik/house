@@ -8,9 +8,11 @@ decision (`docs/decisions.md`) so an unverified number cannot reach a result
 unannounced, and a default in the entry point would put it back one layer out.
 So every figure in a report is one somebody typed on the day.
 
-The single exception is `--collar`, where absence carries meaning rather than a
-value: a roof with no collar tie has no height to state. The report says which
-case it is either way.
+There are no exceptions. `--collar` is required too, with 0 meaning "no collar
+tie" — the one place a value stands in for absence, because a flag cannot be both
+required and omitted. The translation happens here and nowhere else: `AtticSpec`
+keeps `float | None`, since absence genuinely is not a height, and it still
+rejects a collar sitting at or below the wall top.
 
 `README.md` holds the invocation for the design as it currently stands, and the
 reasoning behind each of those numbers is in `docs/spec.md` and
@@ -86,9 +88,9 @@ def build_parser() -> argparse.ArgumentParser:
     headroom.add_argument(
         "--collar",
         type=float,
-        help="klieština underside above the wall top. The one optional input: "
-        "omit it for a roof with no collar tie. Below h_min + floor build-up it "
-        "rules the attic out entirely",
+        required=True,
+        help="klieština underside above the wall top; 0 for a roof with no "
+        "collar tie. Below h_min + floor build-up it rules the attic out entirely",
     )
 
     parser.add_argument(
@@ -107,13 +109,17 @@ def main() -> None:
 
     # The spec constructors are the validation boundary, so a bad flag surfaces
     # as their message rather than a traceback — `parser.error` exits 2 with it.
+    # 0 is how a required flag says "there is none". Anything else goes to the
+    # spec unchanged, which rejects a collar at or below the wall top.
+    collar = None if args.collar == 0 else args.collar
+
     try:
         attic = AtticSpec(
             h_min=args.h_min,
             roof_buildup=args.roof_buildup,
             floor_buildup=args.floor_buildup,
             knee_height=args.knee,
-            collar_above_wall_top=args.collar,
+            collar_above_wall_top=collar,
         )
         costs = CostSpec(eur_per_m2=args.eur_per_m2)
         table = sweep.width_by_pitch(

@@ -23,6 +23,7 @@ FULL = [
     "--roof-buildup", "0.3",
     "--floor-buildup", "0.2",
     "--knee", "0",
+    "--collar", "0",
     "--eur-per-m2", "110",
 ]  # fmt: skip
 
@@ -66,11 +67,21 @@ def test_dropping_any_input_is_an_error(flag: str) -> None:
         cli.build_parser().parse_args(_without(flag))
 
 
-def test_collar_is_the_one_optional_input() -> None:
-    """Absence carries meaning here rather than a value: a roof with no collar tie
-    has no height to state, so omission is the only way to say so."""
-    assert cli.build_parser().parse_args(FULL).collar is None
-    assert cli.build_parser().parse_args([*FULL, "--collar", "2.4"]).collar == 2.4
+def test_zero_is_how_the_collar_flag_says_there_is_none(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A required flag cannot also be omitted, so 0 stands in for absence — and
+    the translation to `None` must happen at this boundary, since `AtticSpec`
+    rejects a collar sitting at or below the wall top.
+    """
+    monkeypatch.setattr(sys, "argv", ["house", *FULL])
+    cli.main()
+    assert "klieština musí byť najmenej" not in capsys.readouterr().out
+
+    monkeypatch.setattr(sys, "argv", ["house", *_without("--collar"), "--collar", "-1"])
+    with pytest.raises(SystemExit):
+        cli.main()
+    assert "collar must sit above the wall top" in capsys.readouterr().err
 
 
 def test_an_invalid_value_exits_with_the_specs_own_message(

@@ -29,7 +29,7 @@ must not do. `uv run house --help` lists them. The design as it currently stands
 uv run house --html roof.html \
   --widths 9 10 11 --length 25 --pitches 25 30 35 40 45 \
   --overhang-eave 0.6 --overhang-gable 0.4 \
-  --h-min 1.9 --roof-buildup 0.30 --floor-buildup 0.20 --knee 0 \
+  --h-min 1.9 --roof-buildup 0.30 --floor-buildup 0.20 --knee 0 --collar 0 \
   --eur-per-m2 110
 ```
 
@@ -41,9 +41,9 @@ The reasoning behind each of those numbers lives in
 `--h-min`, `--roof-buildup` and `--floor-buildup` are still open items there —
 they move the usable-attic figures more than anything else in the list.
 
-`--collar` is the one optional input: omit it for a roof with no collar tie
-(klieština), since there is no height to state. Pass it and the report says
-whether it clears.
+`--knee 0` and `--collar 0` say there is no nadmurovka and no klieština. Zero is
+how a required flag says "none" — the report states which case it is, so a run
+never leaves it ambiguous.
 
 ### What the report is
 

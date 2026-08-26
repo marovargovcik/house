@@ -27,10 +27,11 @@ here first.
   swapping in survey-point terrain later is a body-only change. **Do not** remove
   the unused `y` parameter.
 
-- **No knee wall — but keep the parameter (default 0).** Current design has no knee
-  wall. The `attic` calculation still takes knee-wall height as a parameter
-  defaulting to 0, so "what would a 0.5 m knee wall buy?" is answered instantly
-  without restructuring. **Do not** delete the parameter as dead code.
+- **No knee wall — but keep the parameter.** Current design has no knee wall.
+  The `attic` calculation still takes knee-wall height as a parameter, so "what
+  would a 0.5 m knee wall buy?" is answered instantly without restructuring.
+  **Do not** delete the parameter as dead code. *Superseded in part:* it no
+  longer defaults to 0 — every caller states it, per the no-defaults rule below.
 
 - **Single `Z_pad` excavation model (deliberate over-estimate).** A true split-level
   (garage floor vs. living floor half a story up) has two pad elevations. We model
@@ -110,10 +111,12 @@ here first.
   current design's invocation, and the reasoning behind each figure lives in
   these docs rather than beside the value.
 
-  Two deliberate exceptions, both because absence carries *meaning* rather than a
-  value: `AtticSpec.knee_height` defaults to 0 per the knee-wall decision above,
-  and `collar_above_wall_top` defaults to `None` because a roof with no collar
-  tie has no height to state. The report says which case it is either way.
+  **No exceptions**, including where absence is the answer: a roof with no knee
+  wall passes `knee_height=0.0`, and one with no collar tie passes
+  `collar_above_wall_top=None`. On the command line both are `0`, since a flag
+  cannot be required and also omitted — that translation lives in `cli.py` alone,
+  so `AtticSpec` keeps `float | None` (absence genuinely is not a height) and
+  still rejects a collar at or below the wall top.
 
 - **`h_min` is a required parameter with no default.** Prevents an unverified
   value silently ending up in a result. Sweeps run at 1.9 m explicitly until the

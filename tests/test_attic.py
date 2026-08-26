@@ -16,8 +16,20 @@ HOUSE = HouseSpec(width=9.0, length=10.0)
 # Overhangs do not enter any of this — headroom is measured inside the walls —
 # so they are zeroed rather than given values that would look load-bearing.
 NO_OVERHANG = {"overhang_eave": 0.0, "overhang_gable": 0.0}
-BARE = AtticSpec(h_min=1.9, roof_buildup=0.0, floor_buildup=0.0)
-BUILT = AtticSpec(h_min=1.9, roof_buildup=0.30, floor_buildup=0.20)
+BARE = AtticSpec(
+    h_min=1.9,
+    roof_buildup=0.0,
+    floor_buildup=0.0,
+    knee_height=0.0,
+    collar_above_wall_top=None,
+)
+BUILT = AtticSpec(
+    h_min=1.9,
+    roof_buildup=0.30,
+    floor_buildup=0.20,
+    knee_height=0.0,
+    collar_above_wall_top=None,
+)
 
 
 def test_bare_structure_reproduces_the_spec_worked_examples() -> None:
@@ -83,10 +95,18 @@ def test_a_collar_gates_the_attic_rather_than_narrowing_it() -> None:
     """
     at_45 = RoofSpec(pitch_deg=45.0, **NO_OVERHANG)
     clears = AtticSpec(
-        h_min=1.9, roof_buildup=0.30, floor_buildup=0.20, collar_above_wall_top=2.5
+        h_min=1.9,
+        roof_buildup=0.30,
+        floor_buildup=0.20,
+        knee_height=0.0,
+        collar_above_wall_top=2.5,
     )
     too_low = AtticSpec(
-        h_min=1.9, roof_buildup=0.30, floor_buildup=0.20, collar_above_wall_top=2.0
+        h_min=1.9,
+        roof_buildup=0.30,
+        floor_buildup=0.20,
+        knee_height=0.0,
+        collar_above_wall_top=2.0,
     )
 
     assert attic.usable_width(HOUSE, at_45, BUILT) == pytest.approx(3.9515, abs=1e-4)
@@ -102,6 +122,12 @@ def test_knee_wall_buys_width() -> None:
     offsets the build-ups one-for-one, being the one term that pushes the other
     way.
     """
-    kneed = AtticSpec(h_min=1.9, roof_buildup=0.30, floor_buildup=0.20, knee_height=0.5)
+    kneed = AtticSpec(
+        h_min=1.9,
+        roof_buildup=0.30,
+        floor_buildup=0.20,
+        knee_height=0.5,
+        collar_above_wall_top=None,
+    )
     result = attic.estimate(HOUSE, RoofSpec(pitch_deg=30.0, **NO_OVERHANG), kneed)
     assert result.usable_width == pytest.approx(2.2574, abs=1e-4)
