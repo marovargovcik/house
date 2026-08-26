@@ -6,7 +6,7 @@ core takes `h_min` with no default by decision, and these cost rates are ballpar
 placeholders until the builder's quote lands (`docs/decisions.md`, open items).
 """
 
-import sys
+import argparse
 from pathlib import Path
 
 from house.core import sweep
@@ -37,6 +37,17 @@ COSTS = CostSpec(
 
 def main() -> None:
     """Print the sweep; with a path argument, also write it as CSV."""
+    parser = argparse.ArgumentParser(
+        description="Roof and attic sweep over width and pitch."
+    )
+    parser.add_argument(
+        "csv_path",
+        nargs="?",
+        type=Path,
+        help="write the table here as CSV as well as printing it",
+    )
+    args = parser.parse_args()
+
     table = sweep.width_by_pitch(
         widths=WIDTHS,
         pitches_deg=PITCHES_DEG,
@@ -49,7 +60,6 @@ def main() -> None:
     print(f"h_min = {H_MIN} m (assumption), costs are placeholders\n")
     print(table.round(2).to_string(index=False))
 
-    if len(sys.argv) > 1:
-        path = Path(sys.argv[1])
-        csv.write_csv(table, path)
-        print(f"\nwrote {path}")
+    if args.csv_path is not None:
+        csv.write_csv(table, args.csv_path)
+        print(f"\nwrote {args.csv_path}")
