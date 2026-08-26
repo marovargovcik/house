@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from house.interpreters import csv
+from house.interpreters import to_csv
 
 
 def test_csv_keeps_full_precision_and_drops_the_index(tmp_path: Path) -> None:
@@ -14,7 +14,7 @@ def test_csv_keeps_full_precision_and_drops_the_index(tmp_path: Path) -> None:
     )
     path = tmp_path / "sweep.csv"
 
-    csv.write_csv(table, path)
+    to_csv.write_csv(table, path)
 
     assert path.read_text().splitlines()[0] == "width_m,eur_per_usable_m2"
     reloaded = pd.read_csv(path)

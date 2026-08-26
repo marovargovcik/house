@@ -11,7 +11,7 @@ from pathlib import Path
 
 from house.core import sweep
 from house.core.specs import AtticSpec, CostSpec, RoofingLayer
-from house.interpreters import csv, to_html
+from house.interpreters import to_csv, to_html
 
 # Footprint per the locked placement in `docs/spec.md` §4b: "I"-shape, 10-11 m
 # wide, long axis down the slope. 9 m is swept too as the low anchor the worked
@@ -69,7 +69,7 @@ def main() -> None:
     print(table.round(2).to_string(index=False))
 
     if args.csv_path is not None:
-        csv.write_csv(table, args.csv_path)
+        to_csv.write_csv(table, args.csv_path)
         print(f"\nwrote {args.csv_path}")
 
     if args.html is not None:
