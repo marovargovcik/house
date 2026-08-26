@@ -8,6 +8,9 @@ failed=0
 uv run ruff format --check . || { echo "  -> fix: uv run ruff format ."; failed=1; }
 uv run ruff check .          || { echo "  -> fix: uv run ruff check --fix ."; failed=1; }
 uv run mypy .                || failed=1
+# The pinning tests are the deliverable here, so a broken number must not
+# pass the gate that the docs call "all gates".
+uv run pytest -q             || failed=1
 
 if [[ $failed -ne 0 ]]; then
   echo
