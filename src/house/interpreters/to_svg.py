@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from house.core import views
 from house.core.specs import AtticSpec, HouseSpec, RoofSpec
 from house.core.views import Point, Rect
+from house.interpreters import sk
 
 SCALE = 26.0
 """Pixels per metre, shared by every card — see the module docstring."""
@@ -53,11 +54,6 @@ class _Frame:
     @property
     def height_px(self) -> float:
         return (self.y_max - self.y_min) * SCALE
-
-
-def _num(value: float) -> str:
-    """Trim a metre value to a readable label: 2.60 → 2.6, 12.00 → 12."""
-    return f"{value:.2f}".rstrip("0").rstrip(".")
 
 
 def _line(f: _Frame, a: Point, b: Point, cls: str, arrows: bool = False) -> str:
@@ -156,7 +152,7 @@ def _pitch_arc(f: _Frame, spring: Point, pitch_deg: float) -> str:
                 f'<path class="arc" d="M{sx:.1f},{sy:.1f} '
                 f'A{r:.1f},{r:.1f} 0 0 1 {ex:.1f},{ey:.1f}"/>'
             ),
-            _text(f, label_at, f"{_num(pitch_deg)}°", "angle-label", dy=4.0),
+            _text(f, label_at, f"{sk.trimmed(pitch_deg)}°", "angle-label", dy=4.0),
         )
     )
 
@@ -220,15 +216,19 @@ def _section_panel(
         _text(
             frame,
             Point(-half_width, attic.h_min),
-            f"h_min {_num(attic.h_min)}",
+            f"h_min {sk.trimmed(attic.h_min)}",
             "note end",
             dx=-6.0,
             dy=-4.0,
         ),
         _pitch_arc(frame, sec.knee_top[1], roof.pitch_deg),
         _text(frame, sec.apex, "hrebeň", "note mid", dy=-8.0),
-        _dim_v(frame, 0.0, sec.apex.y, eave_x + 1.0, f"ridge {_num(sec.apex.y)} m"),
-        _dim_h(frame, -half_width, half_width, -1.3, f"width {_num(house.width)} m"),
+        _dim_v(
+            frame, 0.0, sec.apex.y, eave_x + 1.0, f"hrebeň {sk.trimmed(sec.apex.y)} m"
+        ),
+        _dim_h(
+            frame, -half_width, half_width, -1.3, f"šírka {sk.trimmed(house.width)} m"
+        ),
     ]
     if roof.overhang_eave > 0:
         parts.append(
@@ -237,7 +237,7 @@ def _section_panel(
                 -eave_x,
                 -half_width,
                 -0.6,
-                f"odkvap {_num(roof.overhang_eave)}",
+                f"odkvap {sk.trimmed(roof.overhang_eave)}",
             )
         )
     if attic.knee_height > 0:
@@ -249,14 +249,20 @@ def _section_panel(
     if sec.headroom_line is not None:
         left, right = sec.headroom_line
         parts.append(
-            _dim_h(frame, left.x, right.x, -2.0, f"usable {_num(right.x - left.x)} m")
+            _dim_h(
+                frame,
+                left.x,
+                right.x,
+                -2.0,
+                f"úžitková {sk.trimmed(right.x - left.x)} m",
+            )
         )
     else:
         parts.append(
             _text(
                 frame,
                 Point(0.0, -2.0),
-                f"nothing clears {_num(attic.h_min)} m",
+                f"nikde nie je výška {sk.trimmed(attic.h_min)} m",
                 "dim-label",
             )
         )
@@ -288,14 +294,14 @@ def _plan_panel(
             pl.walls.x_min,
             pl.walls.x_max,
             outline.y_min - 0.75,
-            f"length {_num(house.length)} m",
+            f"dĺžka {sk.trimmed(house.length)} m",
         ),
         _dim_v(
             frame,
             pl.walls.y_min,
             pl.walls.y_max,
             outline.x_min - 0.75,
-            f"width {_num(house.width)} m",
+            f"šírka {sk.trimmed(house.width)} m",
         ),
     ]
     if roof.overhang_gable > 0:
@@ -305,7 +311,7 @@ def _plan_panel(
                 pl.walls.x_max,
                 outline.x_max,
                 outline.y_max + 0.35,
-                f"štít {_num(roof.overhang_gable)}",
+                f"štít {sk.trimmed(roof.overhang_gable)}",
             )
         )
     if pl.usable_strip is not None:
@@ -316,7 +322,7 @@ def _plan_panel(
                 strip.y_min,
                 strip.y_max,
                 outline.x_max + 0.75,
-                f"usable {_num(strip.y_max - strip.y_min)} m",
+                f"úžitková {sk.trimmed(strip.y_max - strip.y_min)} m",
             )
         )
     return frame, "".join(parts)

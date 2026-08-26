@@ -1,4 +1,8 @@
-"""Sweep table → a self-contained HTML report, one drawn card per row.
+"""Sweep table → a self-contained HTML report in Slovak, one drawn card per row.
+
+The report is what goes to the projektant and the builders, so the whole page —
+prose, dimension labels, table headers, number formatting — is Slovak. The core
+stays in English: only this boundary translates (`CLAUDE.md`, units & vocabulary).
 
 An interpreter: the only place the report touches the disk. Each card's drawing
 is rebuilt from that row's own `width_m` and `pitch_deg`, so the picture and the
@@ -14,35 +18,53 @@ from typing import Any
 import pandas as pd
 
 from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
-from house.interpreters import to_svg
+from house.interpreters import sk, to_svg
 
-_NUMBERS: tuple[tuple[str, str], ...] = (
-    ("roof area", "roof_area_m2"),
-    ("ridge above wall top", "ridge_above_wall_top_m"),
-    ("usable width", "usable_width_m"),
-    ("usable area", "usable_area_m2"),
-    ("usable fraction", "usable_fraction"),
-    ("total cost", "total_eur"),
-    ("per usable m²", "eur_per_usable_m2"),
+_COLUMNS: tuple[tuple[str, str, str], ...] = (
+    # sweep column, Slovak label, unit ("" for none)
+    ("width_m", "šírka", "m"),
+    ("pitch_deg", "sklon", "°"),
+    ("roof_area_m2", "plocha strechy", "m²"),
+    ("ridge_above_wall_top_m", "hrebeň nad korunou muriva", "m"),
+    ("usable_width_m", "úžitková šírka", "m"),
+    ("usable_area_m2", "úžitková plocha", "m²"),
+    ("usable_fraction", "podiel úžitkovej plochy", "%"),
+    ("total_eur", "cena spolu", "€"),
+    ("eur_per_usable_m2", "cena za úžitkový m²", "€"),
 )
+"""Sweep columns as the report names them. One registry so a card panel, a table
+header, and a unit can never drift apart."""
+
+_PLACES = {"m": 2, "m²": 1, "°": 0, "%": 0, "€": 0}
+
+# Width and pitch head each card, so repeating them inside it is noise.
+_CARD_ROWS = tuple(row for row in _COLUMNS if row[0] not in {"width_m", "pitch_deg"})
 
 
-def _cell(column: str, value: float) -> str:
-    """One number formatted for its column, NaN shown as a dash.
+def _number(unit: str, value: float) -> str:
+    """The bare figure, Slovak-formatted, with no unit attached.
 
     NaN reaches here from `eur_per_usable_m2` where no attic is habitable — see
-    `sweep.width_by_pitch`. Printing it as a dash keeps the row honest instead of
-    rendering a stray `nan`.
+    `sweep.width_by_pitch`. A dash keeps the row honest instead of printing a
+    stray `nan`.
     """
     if math.isnan(value):
         return "—"
-    if column.endswith("_eur") or column.startswith("eur_"):
-        return f"{value:,.0f} €".replace(",", "&#8239;")
-    if column.endswith("_m2"):
-        return f"{value:,.1f} m²"
-    if column.endswith("_m"):
-        return f"{value:.2f} m"
-    return f"{value:.0%}"
+    return sk.fixed(value * 100 if unit == "%" else value, _PLACES[unit])
+
+
+def _with_unit(unit: str, value: float) -> str:
+    """Slovak spaces a unit off its number — except the degree sign.
+
+    A no-break space, so a figure and its unit never land on separate lines. It
+    is the wider U+00A0 rather than the U+202F used between thousands: that one
+    is deliberately tight enough to read as a group separator, which is exactly
+    what a unit gap must not look like.
+    """
+    figure = _number(unit, value)
+    if not unit or figure == "—":
+        return figure
+    return f"{figure}°" if unit == "°" else f"{figure}\u00a0{unit}"
 
 
 def _card(
@@ -59,13 +81,13 @@ def _card(
         overhang_gable=overhang_gable,
     )
     numbers = "".join(
-        f"<div><dt>{label}</dt><dd>{_cell(column, float(record[column]))}</dd></div>"
-        for label, column in _NUMBERS
+        f"<div><dt>{label}</dt><dd>{_with_unit(unit, float(record[column]))}</dd></div>"
+        for column, label, unit in _CARD_ROWS
     )
     return (
         '<figure class="card">'
-        f"<figcaption><b>{house.width:g} m</b> wide "
-        f"· <b>{roof.pitch_deg:g}°</b></figcaption>"
+        f"<figcaption>šírka <b>{sk.trimmed(house.width)} m</b> "
+        f"· sklon <b>{sk.trimmed(roof.pitch_deg)}°</b></figcaption>"
         f"{to_svg.card_svg(house, roof, attic)}"
         f'<dl class="numbers">{numbers}</dl>'
         "</figure>"
@@ -86,7 +108,7 @@ def _sections(
         if width not in widths:
             widths.append(width)
     return "".join(
-        f"<h2>{width:g} m wide</h2><div class='grid'>"
+        f"<h2>šírka {sk.trimmed(width)} m</h2><div class='grid'>"
         + "".join(
             _card(record, length, attic, overhang_eave, overhang_gable)
             for record in records
@@ -110,17 +132,46 @@ def _assumptions(
     travels with the report rather than living only in the entry point.
     """
     items: Iterable[str] = (
-        f"length {length:g} m",
-        f"h_min {attic.h_min:g} m (assumption — the Slovak norm is still open)",
-        f"knee wall {attic.knee_height:g} m",
-        f"odkvapový presah {overhang_eave:g} m, štítový presah {overhang_gable:g} m",
+        f"dĺžka {sk.trimmed(length)} m",
         (
-            f"roof {costs.eur_per_m2:g} €/m² of roof surface — all-in: krov, "
-            "insulation, membrane, battens, covering, gutters, labour"
+            f"h_min {sk.trimmed(attic.h_min)} m "
+            "(predpoklad — slovenská norma zatiaľ nie je potvrdená)"
         ),
-        "charged on gross area, overhang included (a deliberate over-estimate)",
+        f"nadmurovka {sk.trimmed(attic.knee_height)} m",
+        (
+            f"odkvapový presah {sk.trimmed(overhang_eave)} m, "
+            f"štítový presah {sk.trimmed(overhang_gable)} m"
+        ),
+        (
+            f"strecha {sk.trimmed(costs.eur_per_m2)} €/m² plochy strechy — "
+            "všetko v cene: krov, izolácia, poistná fólia, latovanie, krytina, "
+            "odkvapy, práca"
+        ),
+        "účtované z hrubej plochy vrátane presahu (zámerne nadhodnotené)",
     )
     return "".join(f"<li>{item}</li>" for item in items)
+
+
+def _table(records: Sequence[dict[Hashable, Any]]) -> str:
+    """The sweep as a table, formatted exactly as the cards format it.
+
+    Hand-built rather than `DataFrame.to_html` so the headers carry the Slovak
+    names and units from `_COLUMNS`, and the figures match the cards instead of
+    showing pandas' raw floats beside them.
+    """
+    head = "".join(
+        f"<th>{label}{f' ({unit})' if unit else ''}</th>" for _, label, unit in _COLUMNS
+    )
+    body = "".join(
+        "<tr>"
+        + "".join(
+            f"<td>{_number(unit, float(record[column]))}</td>"
+            for column, _, unit in _COLUMNS
+        )
+        + "</tr>"
+        for record in records
+    )
+    return f'<table class="sweep"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>'
 
 
 def write_html(
@@ -139,9 +190,7 @@ def write_html(
         defs=to_svg.defs_svg(),
         assumptions=_assumptions(length, attic, costs, overhang_eave, overhang_gable),
         sections=_sections(records, length, attic, overhang_eave, overhang_gable),
-        table=table.round(2).to_html(
-            index=False, border=0, classes="sweep", na_rep="—"
-        ),
+        table=_table(records),
     )
     path.write_text(page, encoding="utf-8")
 
@@ -204,29 +253,30 @@ table.sweep th { color: var(--dim); font-weight: 500; white-space: nowrap; }
 """
 
 _PAGE = """<!doctype html>
-<html lang="en">
+<html lang="sk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roof sweep — section and plan</title>
+<title>Strecha — šírka a sklon</title>
 <style>{style}</style>
 </head>
 <body>
 {defs}
 <main>
-<h1>Roof sweep &mdash; width &times; pitch</h1>
-<p class="lede">Every drawing is at the same scale, so widths and pitches
-compare by eye across cards.</p>
+<h1>Strecha &mdash; prehľad šírok a sklonov</h1>
+<p class="lede">Všetky výkresy sú v rovnakej mierke, takže šírky a sklony
+sa dajú porovnať voľným okom.</p>
 <ul class="assumptions">{assumptions}</ul>
 <div class="legend">
-<span><i class="swatch roof"></i>roof plane</span>
-<span><i class="swatch over"></i>overhang &mdash; odkvap (eave) / štít (gable)</span>
-<span><i class="swatch ridge"></i>hrebeň (ridge)</span>
-<span><i class="swatch head"></i>h_min headroom line</span>
-<span><i class="swatch fill"></i>standing room — its base is the usable width</span>
+<span><i class="swatch roof"></i>rovina strechy</span>
+<span><i class="swatch over"></i>presah &mdash; odkvapový / štítový</span>
+<span><i class="swatch ridge"></i>hrebeň</span>
+<span><i class="swatch head"></i>h_min &mdash; minimálna podchodná výška</span>
+<span><i class="swatch fill"></i>priestor na státie &mdash; jeho základňa je
+úžitková šírka</span>
 </div>
 {sections}
-<h2>The numbers</h2>
+<h2>Čísla</h2>
 <div class="scroll">{table}</div>
 </main>
 </body>

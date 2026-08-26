@@ -178,6 +178,12 @@ A table of fifteen rows does not show what a pitch *is*. `uv run house --html
 roof.html` writes one self-contained page: every swept row drawn as a gable
 section and a plan, with the numbers beside it.
 
+The page is **Slovak throughout** — prose, dimension labels, table headers, and
+number formatting (decimal comma, no-break space between thousands) — because it
+is what goes to the projektant and the builders. The core stays in English;
+`interpreters/sk.py` and the label strings in the two renderers are the only
+places that translate.
+
 The split follows the rule in §1 rather than bending it:
 
 - `core/views.py` produces the drawing's **coordinates in metres** — apex, eave,

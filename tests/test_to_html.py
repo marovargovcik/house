@@ -62,11 +62,15 @@ def test_a_wider_house_is_drawn_wider_at_the_same_scale() -> None:
 
 
 def test_a_pitch_with_no_headroom_still_renders() -> None:
-    """The 15° case has no usable strip; it must draw, not crash or go blank."""
+    """The 15° case has no usable strip; it must draw, not crash or go blank.
+
+    Also pins the decimal comma: an English-formatted 1.9 on a Slovak drawing is
+    the kind of thing that survives review unnoticed.
+    """
     markup = to_svg.card_svg(
         HouseSpec(width=9.0, length=10.0),
         RoofSpec(pitch_deg=15.0),
         AtticSpec(h_min=1.9),
     )
-    assert "nothing clears 1.9 m" in markup
+    assert "nikde nie je výška 1,9 m" in markup
     assert "url(#hatch)" not in markup
