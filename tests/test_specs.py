@@ -57,3 +57,22 @@ def test_non_positive_roof_rate_is_rejected(bad: float) -> None:
     to be positive rather than merely non-negative."""
     with pytest.raises(ValueError, match="roof rate"):
         CostSpec(eur_per_m2=bad)
+
+
+@pytest.mark.parametrize("collar", [0.5, 0.4])
+def test_a_collar_at_or_below_the_knee_top_is_rejected(collar: float) -> None:
+    """The rafters spring from the knee top, so a collar there ties nothing.
+
+    Both fields are `AtticSpec`'s own, so the spec catches this itself — which is
+    what keeps `views` free of a clamp for a shape that cannot occur. A collar
+    higher than the *roof* needs the width and pitch too; that lives in
+    `core/validate.py`.
+    """
+    with pytest.raises(ValueError, match="knee wall the rafters spring from"):
+        AtticSpec(
+            h_min=1.9,
+            roof_buildup=0.3,
+            floor_buildup=0.2,
+            knee_height=0.5,
+            collar_above_wall_top=collar,
+        )

@@ -115,12 +115,22 @@ class AtticSpec:
                 f"{self.roof_buildup} m, floor {self.floor_buildup} m, "
                 f"knee {self.knee_height} m"
             )
-        if self.collar_above_wall_top is not None and not _is_positive(
-            self.collar_above_wall_top
-        ):
-            raise ValueError(
-                f"collar must sit above the wall top, got {self.collar_above_wall_top} m"
-            )
+        if self.collar_above_wall_top is not None:
+            if not _is_positive(self.collar_above_wall_top):
+                raise ValueError(
+                    "collar must sit above the wall top, got "
+                    f"{self.collar_above_wall_top} m"
+                )
+            # The rafters spring from the knee top, so a collar at or below it
+            # has nothing to tie. Both fields live here, so this is a check the
+            # spec can make itself; a collar higher than the *roof* needs the
+            # width and pitch too, and lives in `core/validate.py`.
+            if self.collar_above_wall_top <= self.knee_height:
+                raise ValueError(
+                    "collar must sit above the knee wall the rafters spring "
+                    f"from, got collar {self.collar_above_wall_top} m, knee "
+                    f"{self.knee_height} m"
+                )
 
 
 @dataclass(frozen=True, slots=True)
