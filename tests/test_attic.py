@@ -114,6 +114,14 @@ def test_a_collar_gates_the_attic_rather_than_narrowing_it() -> None:
     assert attic.usable_width(HOUSE, at_45, too_low) == 0.0
     assert attic.min_collar_height(BUILT) == pytest.approx(2.1)
 
+    # It caps the ridge too. 4.5 m of structural rise leaves 3.8757 m under the
+    # ceiling, but only 2.3 m under a collar at 2.5 m — reporting the ceiling
+    # apex regardless would print headroom nobody can reach.
+    assert attic.clear_ridge_height(HOUSE, at_45, BUILT) == pytest.approx(
+        3.8757, abs=1e-4
+    )
+    assert attic.clear_ridge_height(HOUSE, at_45, clears) == pytest.approx(2.3)
+
 
 def test_knee_wall_buys_width() -> None:
     """A 0.5 m nadmurovka at 30° lifts the strip 0.5254 m -> 2.2574 m.

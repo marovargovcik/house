@@ -181,7 +181,9 @@ algebraically the same as the strip going negative. Usable floor area =
 `usable_width * length`.
 
 `clear_ridge_height = k + (width/2)·tan θ − ceiling_drop − floor_buildup` is the
-best the attic ever gets, and the fastest way to see a pitch is hopeless.
+best the attic ever gets, and the fastest way to see a pitch is hopeless. A
+collar tie caps it like any other point, so with one it is the lesser of that
+and `collar_above_wall_top − floor_buildup`.
 
 #### The collar tie gates; it does not narrow
 
