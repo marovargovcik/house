@@ -42,9 +42,11 @@ core/            # pure modules, depend only on spec dataclasses
   views.py       # section/plan coordinates for drawings
 interpreters/
   to_json.py
-  csv.py
+  to_csv.py      # sweep rows → CSV
+  to_text.py     # sweep rows → fixed-width table for a terminal
   to_svg.py      # views → SVG
   to_html.py     # sweep + drawings → one self-contained page
+  sk.py          # Slovak number formatting for the report
   to_scene.py    # later — geometry → JSON for a JS/Three.js viewer
 tests/           # hand-checked cases pinning every output
 ```
