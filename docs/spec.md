@@ -39,9 +39,12 @@ core/            # pure modules, depend only on spec dataclasses
   attic.py       # usable upstairs area vs. pitch/width
   terrain.py     # Z_ground(x, y) — the terrain seam
   excavation.py  # excavation volume + max cut depth
+  views.py       # section/plan coordinates for drawings
 interpreters/
   to_json.py
   csv.py
+  to_svg.py      # views → SVG
+  to_html.py     # sweep + drawings → one self-contained page
   to_scene.py    # later — geometry → JSON for a JS/Three.js viewer
 tests/           # hand-checked cases pinning every output
 ```
@@ -169,10 +172,38 @@ spring from it, so ridge height above the wall top becomes `k + (width/2)*tan(θ
 The sweep reports that sum as `ridge_above_wall_top_m` — buying attic area with a
 knee wall is not free of height, which matters against a height limit.
 
+### 3d. Drawing the sweep
+
+A table of fifteen rows does not show what a pitch *is*. `uv run house --html
+roof.html` writes one self-contained page: every swept row drawn as a gable
+section and a plan, with the numbers beside it.
+
+The split follows the rule in §1 rather than bending it:
+
+- `core/views.py` produces the drawing's **coordinates in metres** — apex, eave,
+  knee top, headroom line, roof outline, usable strip. They come from
+  `roof.ridge_height` and `attic.usable_width`, the same functions the table
+  uses, so the picture cannot disagree with the row beside it. Being numbers,
+  they are pinned by tests like everything else.
+- `interpreters/to_svg.py` turns metres into pixels and builds strings.
+  `interpreters/to_html.py` is the only part that writes a file.
+
+Two things the drawing is *for*, and the choices that follow from them:
+
+- **One shared scale (px per metre) across every card**, never fit-to-box. An
+  11 m house must look wider than a 9 m one and 25° must look shallower than
+  45°, or the page shows nothing the table did not.
+- **The hatched standing-room region's base is exactly `usable_width`.** The
+  headroom rule of §3b, the number in the table, and the shape on the page are
+  one fact drawn three ways. At a pitch too shallow to stand under, the h_min
+  line is still drawn — floating above the ridge, which is the clearest possible
+  statement of why the attic is unusable.
+
 ### Module 1 summary
 
 - `roof.py`: surface area → cost; rafter geometry → timber (pure functions)
 - `attic.py`: `(width, θ, h_min, knee=0) → usable area` (one pure function)
+- `views.py` + `to_svg.py`/`to_html.py`: the same sweep, drawn (§3d)
 - First real thing worth looking at: a sweep across **width × θ**.
 
 ---

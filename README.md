@@ -15,10 +15,15 @@ produces is pinned by a test against a hand-computed reference.
 ```bash
 uv sync                                  # create the venv from uv.lock
 git config core.hooksPath .githooks      # enable the pre-commit gate (per clone)
-uv run house
+uv run house                             # print the width × pitch sweep
+uv run house --html roof.html            # ...and draw it: section + plan per row
 ```
 
 Everything runs through `uv run`; there is no virtualenv to activate.
+
+`--html` writes one self-contained page — every row of the sweep drawn as a
+gable section and a plan, all at one shared scale so widths and pitches compare
+by eye. Open it in a browser; print to PDF from there if you need paper.
 
 ## Development
 

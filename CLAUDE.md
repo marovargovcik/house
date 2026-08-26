@@ -88,7 +88,9 @@ here, not less.
   ignores it — this is what makes swapping in survey-point terrain a body-only
   change. See `docs/spec.md`.
 - **Calculations are named functions, never buried in render/UI callbacks.** So
-  they can be unit-tested independently of any visualization.
+  they can be unit-tested independently of any visualization. This extends to
+  drawings: a drawing's *coordinates* are numbers, so they live in `core/views.py`
+  and are pinned by tests; only the string building lives in an interpreter.
 - **Every numeric output has a hand-checked `pytest` case that pins it.** A new
   calculation is not done until a test fixes its value against a hand-computed
   reference. Prefer a few high-value checks (flat plot → 0 excavation, 45° roof →
@@ -108,9 +110,12 @@ src/house/
     attic.py       # usable upstairs area vs. pitch/width
     terrain.py     # Z_ground(x, y) — the terrain seam
     excavation.py  # excavation volume + max cut depth
+    views.py       # section/plan coordinates for drawings — numbers, not pixels
   interpreters/    # consume core output; IO lives here
     to_json.py
     csv.py         # sweep table -> CSV
+    to_svg.py      # views -> SVG (string building, no IO)
+    to_html.py     # sweep + drawings -> one self-contained page
     to_scene.py    # later — geometry → JSON for a JS/Three.js viewer
 tests/             # hand-checked cases pinning every output; mirrors src/house/
 docs/
