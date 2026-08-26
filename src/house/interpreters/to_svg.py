@@ -11,6 +11,7 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from house.core import attic as attic_calc
 from house.core import views
 from house.core.specs import AtticSpec, HouseSpec, RoofSpec
 from house.core.views import Point, Rect
@@ -164,7 +165,11 @@ def _section_panel(
     half_width = house.width / 2
     eave_x = sec.eave_outer[1].x
     floor_y = sec.floor[0].y
-    clear_apex = sec.ceiling[1]
+    ceiling_apex = sec.ceiling[1]
+    # Taken from the core rather than measured off the ceiling apex, so the arrow
+    # stops where a collar caps it and the label is the table's `clear_ridge_m`
+    # by construction rather than by coincidence.
+    clear_ridge = attic_calc.clear_ridge_height(house, roof, attic)
     frame = _Frame(
         x_min=-eave_x - 2.7,
         x_max=eave_x + 1.9,
@@ -186,7 +191,7 @@ def _section_panel(
                 sec.apex,
                 sec.knee_top[1],
                 sec.ceiling[2],
-                clear_apex,
+                ceiling_apex,
                 sec.ceiling[0],
             ),
             "buildup",
@@ -224,9 +229,9 @@ def _section_panel(
         _dim_v(
             frame,
             floor_y,
-            clear_apex.y,
+            floor_y + clear_ridge,
             -eave_x - 1.7,
-            f"svetlá {sk.trimmed(clear_apex.y - floor_y)} m",
+            f"svetlá {sk.trimmed(clear_ridge)} m",
         ),
         _dim_h(
             frame, -half_width, half_width, -1.3, f"šírka {sk.trimmed(house.width)} m"
