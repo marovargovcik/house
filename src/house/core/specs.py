@@ -69,20 +69,48 @@ class RoofSpec:
 class AtticSpec:
     """Headroom rule bounding habitable attic area (obytné podkrovie).
 
-    `h_min` deliberately has no default: the binding figure depends on the
-    Slovak *obytná plocha* norm, still an open item in `docs/decisions.md`.
-    Passing it explicitly keeps an unverified value from reaching a result.
+    `h_min` is **clear** height — finished floor to finished ceiling — so the
+    build-ups that eat into it belong here as inputs rather than as a correction
+    someone remembers to apply later. Measuring to bare structure on both faces
+    is the mistake this type exists to make impossible.
+
+    - `h_min` — no default by decision, see `docs/decisions.md`.
+    - `roof_buildup` — thickness **perpendicular to the roof plane**: rafter
+      (krokva) depth, insulation, service cavity, lining. Perpendicular because
+      that is how rafters and insulation are specified; `attic.ceiling_drop`
+      converts it to the vertical loss that headroom actually feels.
+    - `floor_buildup` — **vertical** thickness of the attic floor above the wall
+      top: structure, insulation, screed, covering.
+    - `knee_height` — nadmurovka; the slopes spring from its top.
+    - `collar_above_wall_top` — underside of the collar tie (klieština) above the
+      wall top, or `None` for a roof with no collar. See `attic.usable_width`
+      for why this gates rather than reduces.
     """
 
     h_min: float
+    roof_buildup: float
+    floor_buildup: float
     knee_height: float = 0.0
+    collar_above_wall_top: float | None = None
 
     def __post_init__(self) -> None:
         if not _is_positive(self.h_min):
             raise ValueError(f"h_min must be positive, got {self.h_min} m")
-        if not _is_non_negative(self.knee_height):
+        if not (
+            _is_non_negative(self.roof_buildup)
+            and _is_non_negative(self.floor_buildup)
+            and _is_non_negative(self.knee_height)
+        ):
             raise ValueError(
-                f"knee wall height must be non-negative, got {self.knee_height} m"
+                "build-ups and knee wall height must be non-negative, got roof "
+                f"{self.roof_buildup} m, floor {self.floor_buildup} m, "
+                f"knee {self.knee_height} m"
+            )
+        if self.collar_above_wall_top is not None and not _is_positive(
+            self.collar_above_wall_top
+        ):
+            raise ValueError(
+                f"collar must sit above the wall top, got {self.collar_above_wall_top} m"
             )
 
 

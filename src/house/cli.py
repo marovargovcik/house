@@ -28,6 +28,13 @@ OVERHANG_GABLE = 0.4
 # on the Slovak *obytná plocha* norm.
 H_MIN = 1.9
 
+# Clear-height allowances, both explicit assumptions until the projektant's
+# section drawing lands (`docs/decisions.md`, open items). ROOF_BUILDUP is
+# measured perpendicular to the roof plane — krokva, insulation, service cavity,
+# and lining — so it costs more headroom the steeper the pitch.
+ROOF_BUILDUP = 0.30
+FLOOR_BUILDUP = 0.20
+
 # All-in roof rate: krov, insulation, membrane, battens, covering, gutters, and
 # labour in one number, the way a builder quotes it (`docs/decisions.md`).
 COSTS = CostSpec(eur_per_m2=110.0)
@@ -51,7 +58,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    attic = AtticSpec(h_min=H_MIN)
+    attic = AtticSpec(
+        h_min=H_MIN, roof_buildup=ROOF_BUILDUP, floor_buildup=FLOOR_BUILDUP
+    )
     table = sweep.width_by_pitch(
         widths=WIDTHS,
         pitches_deg=PITCHES_DEG,

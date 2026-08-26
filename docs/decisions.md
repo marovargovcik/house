@@ -81,6 +81,26 @@ here first.
   **Do not** re-introduce per-layer costing unless a quote actually arrives
   broken down that way.
 
+- **Headroom is clear height; the build-ups are required inputs.** The model
+  first measured `h_min` from the wall top to the rafter line — bare structure to
+  bare structure — which over-stated the usable strip by roughly half and, at
+  9 m / 25°, reported 0.85 m of usable width where nothing clears 1.9 m at all.
+  `roof_buildup` and `floor_buildup` are now required parameters with **no
+  defaults**, for the same reason `h_min` has none: a zero default silently
+  restores the flattering number. `roof_buildup` is measured **perpendicular to
+  the roof plane**, so it costs `t / cos θ` of headroom — **do not** re-specify
+  it as a vertical figure, which would under-state every steep pitch.
+
+- **A collar tie gates the attic rather than narrowing it.** A collar caps clear
+  height everywhere at once: under it you have the collar's height, outboard of
+  it the ceiling is already lower. So it either rules the attic out entirely or
+  costs nothing, and the useful output is the constraint
+  `min_collar_above_wall_top = h_min + floor_buildup` — one figure for a whole
+  sweep. Treating the collar plane as a ceiling is deliberately conservative (you
+  can put your head between collars, but not while walking). **Do not** model it
+  as a width reduction. Ridge beams, purlins, and dormers are *not* modelled, so
+  today's figures are the ceiling of what a pitch can deliver, not a promise.
+
 - **`h_min` is a required parameter with no default.** Prevents an unverified
   value silently ending up in a result. Sweeps run at 1.9 m explicitly until the
   Slovak *obytná plocha* norm is confirmed. **Do not** add a default value until
@@ -95,3 +115,9 @@ here first.
   (*nadmurovka*) of ~1.3 m and cite a 20–45° pitch range for a habitable attic.
   Treat these as **indicative sanity-check anchors only** — the binding `h_min`
   and habitable-area definition needs the actual norm, not a builder's blog.
+- Roof and floor build-up thicknesses — sweeping at 0.30 m (perpendicular) and
+  0.20 m as explicit assumptions. Both need the projektant's section drawing:
+  they move the usable strip more than any other input, and at the shallow end
+  they decide whether there is an attic at all.
+- Collar tie: whether the krov has one, and at what height. `min_collar_height`
+  reports the lowest that works, currently 2.1 m above the wall top.

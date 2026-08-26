@@ -13,15 +13,19 @@ def test_pitch_outside_the_open_interval_is_rejected(pitch_deg: float) -> None:
         RoofSpec(pitch_deg=pitch_deg)
 
 
-def test_h_min_has_no_default() -> None:
-    """docs/decisions.md forbids a default until the Slovak norm is confirmed.
+def test_headroom_inputs_have_no_defaults() -> None:
+    """`h_min` and both build-ups must be stated at every call site.
 
-    mypy would catch a call site omitting it, but not someone *adding* a
-    default — that regression would silently put an unverified number into
-    every result, so it is pinned here.
+    docs/decisions.md forbids a default `h_min` until the Slovak norm is
+    confirmed, and the build-ups carry the same rule for the same reason: a
+    zero default silently restores the bare-structure headroom that over-stated
+    the usable strip by roughly half. mypy would catch a call site omitting
+    them, but not someone *adding* a default, so it is pinned here.
     """
     with pytest.raises(TypeError):
         AtticSpec()  # type: ignore[call-arg]
+    with pytest.raises(TypeError):
+        AtticSpec(h_min=1.9)  # type: ignore[call-arg]
 
 
 @pytest.mark.parametrize("bad", [float("nan"), float("inf")])
@@ -32,7 +36,7 @@ def test_non_finite_dimensions_are_rejected(bad: float) -> None:
     with pytest.raises(ValueError, match="footprint"):
         HouseSpec(width=bad, length=10.0)
     with pytest.raises(ValueError, match="h_min"):
-        AtticSpec(h_min=bad)
+        AtticSpec(h_min=bad, roof_buildup=0.3, floor_buildup=0.2)
 
 
 @pytest.mark.parametrize("bad", [0.0, -1.0, float("nan")])

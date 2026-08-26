@@ -157,65 +157,60 @@ def _pitch_arc(f: _Frame, spring: Point, pitch_deg: float) -> str:
     )
 
 
-def _standing_room(
-    sec: views.SectionGeometry,
-    line: tuple[Point, Point],
-    h_min: float,
-    knee: float,
-) -> list[Point]:
-    """The cross-section you can actually stand in: the floor strip up to
-    `h_min`, then the ceiling itself on to the ridge.
-
-    Its base is exactly `usable_width`, so the hatched shape and the number in
-    the table are the same fact drawn two ways.
-    """
-    left, right = line
-    # With a knee wall taller than h_min the region turns at the knee top rather
-    # than at the headroom line, so those corners join in.
-    upper = [sec.knee_top[1], sec.apex, sec.knee_top[0]] if knee > h_min else [sec.apex]
-    return [Point(left.x, 0.0), Point(right.x, 0.0), right, *upper, left]
-
-
 def _section_panel(
     house: HouseSpec, roof: RoofSpec, attic: AtticSpec
 ) -> tuple[_Frame, str]:
     sec = views.section(house, roof, attic)
     half_width = house.width / 2
     eave_x = sec.eave_outer[1].x
+    floor_y = sec.floor[0].y
+    clear_apex = sec.ceiling[1]
     frame = _Frame(
-        x_min=-eave_x - 1.7,
+        x_min=-eave_x - 2.7,
         x_max=eave_x + 1.9,
         y_min=min(0.0, sec.eave_outer[0].y) - 2.5,
-        y_max=max(sec.apex.y, attic.h_min) + 0.9,
+        y_max=max(sec.apex.y, floor_y + attic.h_min) + 0.9,
     )
 
     parts = []
-    if sec.headroom_line is not None:
-        parts.append(
-            _polygon(
-                frame,
-                _standing_room(sec, sec.headroom_line, attic.h_min, attic.knee_height),
-                "usable",
-            )
-        )
+    if sec.standing_room is not None:
+        parts.append(_polygon(frame, sec.standing_room, "usable"))
     parts += [
+        # The band between the roof plane and the finished ceiling is the
+        # headroom the rafters and insulation take; drawing it is the whole
+        # point of separating the two lines.
+        _polygon(
+            frame,
+            (
+                sec.knee_top[0],
+                sec.apex,
+                sec.knee_top[1],
+                sec.ceiling[2],
+                clear_apex,
+                sec.ceiling[0],
+            ),
+            "buildup",
+        ),
+        _rect(frame, Rect(-half_width, 0.0, half_width, floor_y), "buildup"),
         _line(frame, Point(-eave_x - 0.4, 0.0), Point(eave_x + 0.4, 0.0), "datum"),
         _line(frame, sec.knee_top[0], sec.apex, "roof"),
         _line(frame, sec.knee_top[1], sec.apex, "roof"),
         _line(frame, sec.knee_top[0], sec.eave_outer[0], "roof overhang"),
         _line(frame, sec.knee_top[1], sec.eave_outer[1], "roof overhang"),
-        # Drawn even when the ridge is lower than h_min: a dashed line floating
+        _polyline(frame, sec.ceiling, "ceiling"),
+        _line(frame, sec.floor[0], sec.floor[1], "floor"),
+        # Drawn even when the ceiling never reaches it: a dashed line floating
         # above the apex is the clearest possible statement of why the attic is
         # unusable at this pitch.
         _line(
             frame,
-            Point(-half_width, attic.h_min),
-            Point(half_width, attic.h_min),
+            Point(-half_width, floor_y + attic.h_min),
+            Point(half_width, floor_y + attic.h_min),
             "headroom",
         ),
         _text(
             frame,
-            Point(-half_width, attic.h_min),
+            Point(-half_width, floor_y + attic.h_min),
             f"h_min {sk.trimmed(attic.h_min)}",
             "note end",
             dx=-6.0,
@@ -225,6 +220,13 @@ def _section_panel(
         _text(frame, sec.apex, "hrebeň", "note mid", dy=-8.0),
         _dim_v(
             frame, 0.0, sec.apex.y, eave_x + 1.0, f"hrebeň {sk.trimmed(sec.apex.y)} m"
+        ),
+        _dim_v(
+            frame,
+            floor_y,
+            clear_apex.y,
+            -eave_x - 1.7,
+            f"svetlá {sk.trimmed(clear_apex.y - floor_y)} m",
         ),
         _dim_h(
             frame, -half_width, half_width, -1.3, f"šírka {sk.trimmed(house.width)} m"
@@ -245,6 +247,11 @@ def _section_panel(
             _line(frame, sec.wall_top[0], sec.knee_top[0], "knee"),
             _line(frame, sec.wall_top[1], sec.knee_top[1], "knee"),
             _text(frame, sec.knee_top[0], "nadmurovka", "note end", dx=-7.0),
+        ]
+    if sec.collar is not None:
+        parts += [
+            _line(frame, sec.collar[0], sec.collar[1], "collar"),
+            _text(frame, sec.collar[1], "klieština", "note", dx=6.0, dy=-4.0),
         ]
     if sec.headroom_line is not None:
         left, right = sec.headroom_line
@@ -380,6 +387,10 @@ STYLE = """
 .drawing .roof { stroke: var(--roof); stroke-width: 3; }
 .drawing .overhang { stroke: var(--roof); stroke-width: 3; opacity: 0.45; }
 .drawing .knee { stroke: var(--roof); stroke-width: 5; }
+.drawing .buildup { fill: var(--roof); fill-opacity: 0.22; stroke: none; }
+.drawing .ceiling { stroke: var(--ink); stroke-width: 1.6; opacity: 0.85; }
+.drawing .floor { stroke: var(--ink); stroke-width: 2.5; opacity: 0.85; }
+.drawing .collar { stroke: var(--roof); stroke-width: 4; }
 .drawing .datum { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 7 3 2 3;
   opacity: 0.5; }
 .drawing .headroom { stroke: var(--usable); stroke-width: 1.2; stroke-dasharray: 5 4; }

@@ -51,6 +51,10 @@ def width_by_pitch(
                     # `roof.ridge_height` is the slope rise alone, which is why
                     # the knee is added here rather than hidden in the geometry.
                     "ridge_above_wall_top_m": (geom.ridge_height + attic.knee_height),
+                    # What is left of that ridge after the roof and floor
+                    # build-ups. The structural figure is what a height limit
+                    # measures; this is what you stand under.
+                    "clear_ridge_m": usable.clear_ridge_height,
                     "usable_width_m": usable.usable_width,
                     "usable_area_m2": usable.usable_area,
                     "usable_fraction": usable.usable_area / (width * length),

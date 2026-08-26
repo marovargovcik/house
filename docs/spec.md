@@ -139,23 +139,82 @@ headroom `h_min`.
 > the binding figure depends on the Slovak *obytná plocha* norm, still an open
 > item (§7).
 
-At headroom `h`, horizontal distance from the eave is `h / tan(θ)`. So:
+#### Headroom is clear height, not distance between bare structure
+
+The rafter line is not the ceiling and the wall top is not the floor. Three
+things stand between the structure and the height you can actually stand in, and
+they behave differently:
+
+| | What it is | How it acts |
+|---|---|---|
+| `roof_buildup` | rafter (krokva) depth, insulation, service cavity, lining | lowers the ceiling |
+| `floor_buildup` | attic floor structure, insulation, screed, covering | raises the floor |
+| `collar_above_wall_top` | collar tie (klieština) underside | caps the height everywhere |
+
+**The roof build-up is measured perpendicular to the roof plane** — that is how
+rafters and insulation are specified. Headroom is vertical, and two parallel
+planes a perpendicular distance `t` apart stand `t / cos θ` apart vertically:
 
 ```
-usable_width = width − 2 * (h_min / tan(θ))
+ceiling_drop = roof_buildup / cos(θ)
 ```
 
-...provided ridge height `(width/2)*tan(θ) > h_min`, else usable_width = 0.
-Usable floor area = `usable_width * length`.
+So the same 0.30 m of rafters and insulation costs 0.33 m of headroom at 25° and
+0.42 m at 45°. A steep roof pays twice — it buys width but gives some back.
 
-Worked examples (h_min = 1.9 m):
-- 9 m wide, 30° → each side loses 1.9/tan(30°) ≈ 3.29 m → usable_width ≈ 2.42 m
-  (the "stand in the middle, bump your head reaching the sides" problem)
-- 9 m wide, 40° → each side loses ≈ 2.26 m → usable_width ≈ 4.47 m
+> [!WARNING]
+> Taking `roof_buildup` as a *vertical* figure instead would under-state every
+> steep pitch, which is the direction that flatters the result. This is the same
+> class of mistake as wiring `o_eave` to the wrong factor in §3a.
+
+At clear height `h` above the finished floor, horizontal distance from the eave
+is `(h + ceiling_drop + floor_buildup − k) / tan θ`. So:
+
+```
+usable_width = width − 2 * max(0, (h_min + roof_buildup/cos θ + floor_buildup − k) / tan θ)
+```
+
+...clamped at 0, which also covers "the ceiling never reaches `h_min`" — that is
+algebraically the same as the strip going negative. Usable floor area =
+`usable_width * length`.
+
+`clear_ridge_height = k + (width/2)·tan θ − ceiling_drop − floor_buildup` is the
+best the attic ever gets, and the fastest way to see a pitch is hopeless.
+
+#### The collar tie gates; it does not narrow
+
+A collar tie caps clear height at its own underside. Under it you have the
+collar's height; outboard of it the ceiling has already fallen below the collar.
+So there is no middle case:
+
+- collar clears `h_min` → it takes **nothing** off the strip the roof plane allows
+- collar does not clear `h_min` → **nothing** in the attic does; usable area is 0
+
+Which makes the useful output a constraint rather than a reduction:
+
+```
+min_collar_above_wall_top = h_min + floor_buildup
+```
+
+Independent of width and pitch — one figure to hand the projektant when the krov
+is designed. Note the tension it creates: headroom pushes the collar up, and
+structure wants it lower. We do not model the structural side.
+
+Worked examples (h_min = 1.9 m, roof build-up 0.30 m, floor build-up 0.20 m):
+- 9 m wide, 25° → 2.10 m structural ridge is **1.57 m clear**: no habitable
+  attic at all, where measuring to bare structure claimed 0.85 m of usable width
+- 9 m wide, 30° → usable_width 0.53 m (bare structure said 2.42 m)
+- 9 m wide, 40° → usable_width 3.06 m (bare structure said 4.47 m)
 
 **Key trade-off the sweep must surface:** steeper pitch *buys* usable attic area
 but *costs* more roof surface (area grows as `1/cos θ`) and more ridge height.
-That opposition is exactly why a sweep across θ beats guessing.
+That opposition is exactly why a sweep across θ beats guessing — and the
+build-ups sharpen it, because they push the shallow end off the table entirely.
+
+> [!NOTE]
+> Not modelled: a ridge beam (hrebeňová väznica), purlins and their posts, and
+> dormers. Each takes further headroom in a real krov. Today's figures are the
+> ceiling of what a given pitch can deliver, not a promise.
 
 ### 3c. Knee-wall parameter (default 0)
 
@@ -164,8 +223,11 @@ parameter defaulting to 0, so "what would a 0.5 m knee wall buy me?" is answered
 instantly without restructuring:
 
 ```
-usable_width = width − 2 * max(0, (h_min − k) / tan(θ))
+usable_width = width − 2 * max(0, (h_min + ceiling_drop + floor_buildup − k) / tan(θ))
 ```
+
+The knee wall is the one term that pushes the other way: it offsets the two
+build-ups one-for-one.
 
 A knee wall also raises the roof: it stands on the wall top and the slopes
 spring from it, so ridge height above the wall top becomes `k + (width/2)*tan(θ)`.
@@ -208,7 +270,8 @@ Two things the drawing is *for*, and the choices that follow from them:
 ### Module 1 summary
 
 - `roof.py`: surface area → cost; rafter geometry → timber (pure functions)
-- `attic.py`: `(width, θ, h_min, knee=0) → usable area` (one pure function)
+- `attic.py`: `(width, θ, h_min, build-ups, knee, collar) → usable area, clear
+  ridge height` — headroom measured clear, not between bare structure
 - `views.py` + `to_svg.py`/`to_html.py`: the same sweep, drawn (§3d)
 - First real thing worth looking at: a sweep across **width × θ**.
 

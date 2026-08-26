@@ -17,6 +17,7 @@ from typing import Any
 
 import pandas as pd
 
+from house.core import attic as attic_calc
 from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
 from house.interpreters import sk, to_svg
 
@@ -26,6 +27,7 @@ _COLUMNS: tuple[tuple[str, str, str], ...] = (
     ("pitch_deg", "sklon", "°"),
     ("roof_area_m2", "plocha strechy", "m²"),
     ("ridge_above_wall_top_m", "hrebeň nad korunou muriva", "m"),
+    ("clear_ridge_m", "svetlá výška v hrebeni", "m"),
     ("usable_width_m", "úžitková šírka", "m"),
     ("usable_area_m2", "úžitková plocha", "m²"),
     ("usable_fraction", "podiel úžitkovej plochy", "%"),
@@ -139,6 +141,17 @@ def _assumptions(
         ),
         f"nadmurovka {sk.trimmed(attic.knee_height)} m",
         (
+            f"skladba strechy {sk.trimmed(attic.roof_buildup)} m kolmo na rovinu "
+            "strechy (krokvy, izolácia, podhľad) — zvislo teda viac, tým viac, "
+            "čím je strecha strmšia"
+        ),
+        (f"skladba podlahy {sk.trimmed(attic.floor_buildup)} m nad korunou muriva"),
+        (
+            "klieština musí byť najmenej "
+            f"{sk.trimmed(attic_calc.min_collar_height(attic))} m nad korunou "
+            "muriva, inak pod ňou nikde nie je podchodná výška"
+        ),
+        (
             f"odkvapový presah {sk.trimmed(overhang_eave)} m, "
             f"štítový presah {sk.trimmed(overhang_gable)} m"
         ),
@@ -227,6 +240,8 @@ h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; padding-bottom: .4rem;
 .swatch.over { border-color: var(--roof); opacity: .45; }
 .swatch.head { border-color: var(--usable); border-top-style: dashed; }
 .swatch.ridge { border-color: var(--roof); border-top-style: dashed; }
+.swatch.collar { border-top-width: 5px; border-color: var(--roof); }
+.swatch.build { height: 13px; border: none; background: var(--roof); opacity: .3; }
 .swatch.fill { height: 13px; border: 1px solid var(--usable); background:
   repeating-linear-gradient(45deg, transparent 0 3px, var(--usable) 3px 5px); }
 .grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
@@ -271,6 +286,9 @@ sa dajú porovnať voľným okom.</p>
 <span><i class="swatch roof"></i>rovina strechy</span>
 <span><i class="swatch over"></i>presah &mdash; odkvapový / štítový</span>
 <span><i class="swatch ridge"></i>hrebeň</span>
+<span><i class="swatch build"></i>skladba strechy a podlahy &mdash; to, čo uberá
+podchodnú výšku</span>
+<span><i class="swatch collar"></i>klieština</span>
 <span><i class="swatch head"></i>h_min &mdash; minimálna podchodná výška</span>
 <span><i class="swatch fill"></i>priestor na státie &mdash; jeho základňa je
 úžitková šírka</span>
