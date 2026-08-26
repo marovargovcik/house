@@ -37,6 +37,7 @@ REQUIRED_FLAGS = [
     "--roof-buildup",
     "--floor-buildup",
     "--knee",
+    "--collar",
     "--eur-per-m2",
 ]
 
