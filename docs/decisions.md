@@ -148,11 +148,19 @@ here first.
   *Consequence:* **do not** add a defensive clamp downstream for a shape
   validation already rules out — a collar poking through the roof was first
   "fixed" by clamping it in `views`, which is dead code once the spec refuses the
-  input. A collar higher than the roof fails the **whole run**, naming the
-  offending (width, pitch) rows, rather than dropping them: a row for a house
-  nobody can build is not an answer, and the sweep's value rests on every row
-  being one. **Not** validated, deliberately: a pitch too shallow to stand under
-  and a collar too low to clear `h_min` are *results* the model already reports.
+  input.
+
+  **A failed cross-spec check fails the whole run**, naming the offending
+  (width, pitch) rows rather than dropping them: a row for a house nobody can
+  build is not an answer, and the sweep is only worth reading if every row is
+  one. The cost is that one impossible combination blocks the rest, which is
+  accepted — the fix is to lower the collar or drop those rows from the sweep.
+  **Do not** downgrade this to skipping the offending rows, or to a warning on
+  the report.
+
+  **Not** validated, deliberately: a pitch too shallow to stand under and a
+  collar too low to clear `h_min` are *results* the model already reports —
+  0 usable width, NaN per m², and the collar note on the page.
 
 - **Interpreters split building from writing.** `render_html` / `write_html`,
   `render_csv` / `write_csv`. The pure function returns the string; the wrapper
