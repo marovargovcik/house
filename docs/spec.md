@@ -164,6 +164,11 @@ instantly without restructuring:
 usable_width = width − 2 * max(0, (h_min − k) / tan(θ))
 ```
 
+A knee wall also raises the roof: it stands on the wall top and the slopes
+spring from it, so ridge height above the wall top becomes `k + (width/2)*tan(θ)`.
+The sweep reports that sum as `ridge_above_wall_top_m` — buying attic area with a
+knee wall is not free of height, which matters against a height limit.
+
 ### Module 1 summary
 
 - `roof.py`: surface area → cost; rafter geometry → timber (pure functions)

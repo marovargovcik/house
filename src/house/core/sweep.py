@@ -46,7 +46,11 @@ def width_by_pitch(
                     "width_m": width,
                     "pitch_deg": pitch_deg,
                     "roof_area_m2": geom.surface_area,
-                    "ridge_height_m": geom.ridge_height,
+                    # The knee wall (nadmurovka) sits on the wall top and the
+                    # roof springs from it, so it raises the ridge one-for-one.
+                    # `roof.ridge_height` is the slope rise alone, which is why
+                    # the knee is added here rather than hidden in the geometry.
+                    "ridge_above_wall_top_m": (geom.ridge_height + attic.knee_height),
                     "usable_width_m": usable.usable_width,
                     "usable_area_m2": usable.usable_area,
                     "usable_fraction": usable.usable_area / (width * length),

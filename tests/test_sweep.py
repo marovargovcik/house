@@ -2,6 +2,7 @@
 
 import math
 
+import pandas as pd
 import pytest
 
 from house.core import sweep
@@ -39,3 +40,25 @@ def test_row_matches_the_hand_checked_case_and_flags_unusable_pitches() -> None:
     shallow = table[table["pitch_deg"] == 20.0].iloc[0]
     assert shallow["usable_area_m2"] == 0.0
     assert math.isnan(shallow["eur_per_usable_m2"])
+
+
+def test_knee_wall_raises_the_reported_ridge_by_its_own_height() -> None:
+    """A knee wall buys attic area, but not for free: the roof springs from its
+    top, so the ridge rises with it. Reporting the slope rise alone would read as
+    "free area" against a height limit."""
+
+    def row(knee: float) -> pd.Series[float]:
+        table = sweep.width_by_pitch(
+            widths=[9.0],
+            pitches_deg=[30.0],
+            length=10.0,
+            attic=AtticSpec(h_min=1.9, knee_height=knee),
+            costs=COSTS,
+            overhang_eave=0.6,
+            overhang_gable=0.4,
+        )
+        return table.iloc[0]
+
+    assert row(0.0)["ridge_above_wall_top_m"] == pytest.approx(2.5981, abs=1e-4)
+    assert row(0.5)["ridge_above_wall_top_m"] == pytest.approx(3.0981, abs=1e-4)
+    assert row(0.5)["usable_width_m"] == pytest.approx(4.1503, abs=1e-4)
