@@ -1,13 +1,20 @@
 """Entry point for the Module 1 sweep (`docs/spec.md` §3): width by pitch.
 
-The imperative shell — it picks the inputs, calls the pure core, and prints.
-Every input is a flag, and the constants below are its documented defaults, so
-`--help` carries the assumptions and a run with custom flags still describes
-itself in the report header.
+The imperative shell — it reads the inputs, calls the pure core, and prints.
 
-Defaults are stated here rather than hidden in the core: `AtticSpec` takes
-`h_min` and both build-ups with no defaults by decision (`docs/decisions.md`),
-precisely so an unverified number cannot reach a result unannounced.
+**Every input is required.** A default here would be the same failure the core
+already refuses: `AtticSpec` takes `h_min` and both build-ups with no defaults by
+decision (`docs/decisions.md`) so an unverified number cannot reach a result
+unannounced, and a default in the entry point would put it back one layer out.
+So every figure in a report is one somebody typed on the day.
+
+The single exception is `--collar`, where absence carries meaning rather than a
+value: a roof with no collar tie has no height to state. The report says which
+case it is either way.
+
+`README.md` holds the invocation for the design as it currently stands, and the
+reasoning behind each of those numbers is in `docs/spec.md` and
+`docs/decisions.md` — not here, where it would rot next to a value nobody reads.
 """
 
 import argparse
@@ -17,44 +24,12 @@ from house.core import sweep
 from house.core.specs import AtticSpec, CostSpec
 from house.interpreters import to_csv, to_html
 
-# Footprint per the locked placement in `docs/spec.md` §4b: "I"-shape, 10-11 m
-# wide, long axis down the slope. 9 m is swept too as the low anchor the worked
-# examples in §3b use.
-WIDTHS = (9.0, 10.0, 11.0)
-# Front wall at x = 18 m on a 46 m plot leaves 28 m to build into, so 25 m runs
-# the house nearly to the lower shelf with ~3 m to spare (`docs/spec.md` §4b).
-LENGTH = 25.0
-PITCHES_DEG = (25.0, 30.0, 35.0, 40.0, 45.0)
-OVERHANG_EAVE = 0.6
-OVERHANG_GABLE = 0.4
-
-# An explicit sweep assumption, not a confirmed value — the binding figure waits
-# on the Slovak *obytná plocha* norm.
-H_MIN = 1.9
-
-# Clear-height allowances, both explicit assumptions until the projektant's
-# section drawing lands (`docs/decisions.md`, open items). ROOF_BUILDUP is
-# measured perpendicular to the roof plane — krokva, insulation, service cavity,
-# and lining — so it costs more headroom the steeper the pitch.
-ROOF_BUILDUP = 0.30
-FLOOR_BUILDUP = 0.20
-
-# No knee wall and no collar tie in the current design. Both are exposed anyway:
-# "what would a 0.5 m nadmurovka buy me?" is the question `docs/decisions.md`
-# keeps the knee parameter alive to answer, and it deserves a flag rather than an
-# edit.
-KNEE_HEIGHT = 0.0
-
-# All-in roof rate: krov, insulation, membrane, battens, covering, gutters, and
-# labour in one number, the way a builder quotes it (`docs/decisions.md`).
-EUR_PER_M2 = 110.0
-
 
 def build_parser() -> argparse.ArgumentParser:
-    """Every sweep input as a flag, defaulting to the constants above."""
+    """Every sweep input as a required flag. See the module docstring."""
     parser = argparse.ArgumentParser(
-        description="Roof and attic sweep over width and pitch.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description="Roof and attic sweep over width and pitch. "
+        "Every input is required — see README.md for the current design.",
     )
     parser.add_argument(
         "csv_path",
@@ -68,62 +43,58 @@ def build_parser() -> argparse.ArgumentParser:
         help="also write a drawn report here: section and plan per swept row",
     )
 
-    footprint = parser.add_argument_group("footprint")
+    footprint = parser.add_argument_group("footprint (required)")
     footprint.add_argument(
-        "--widths", type=float, nargs="+", default=list(WIDTHS), help="metres, swept"
+        "--widths", type=float, nargs="+", required=True, help="metres, swept"
     )
-    footprint.add_argument("--length", type=float, default=LENGTH, help="metres")
+    footprint.add_argument("--length", type=float, required=True, help="metres")
     footprint.add_argument(
-        "--pitches",
-        type=float,
-        nargs="+",
-        default=list(PITCHES_DEG),
-        help="degrees, swept",
+        "--pitches", type=float, nargs="+", required=True, help="degrees, swept"
     )
     footprint.add_argument(
         "--overhang-eave",
         type=float,
-        default=OVERHANG_EAVE,
+        required=True,
         help="odkvapový presah, horizontal projection in metres",
     )
     footprint.add_argument(
         "--overhang-gable",
         type=float,
-        default=OVERHANG_GABLE,
+        required=True,
         help="štítový presah, horizontal projection in metres",
     )
 
-    headroom = parser.add_argument_group("headroom (all clear heights, metres)")
+    headroom = parser.add_argument_group("headroom, in metres (required)")
     headroom.add_argument(
-        "--h-min", type=float, default=H_MIN, help="minimum standing height"
+        "--h-min", type=float, required=True, help="minimum clear standing height"
     )
     headroom.add_argument(
         "--roof-buildup",
         type=float,
-        default=ROOF_BUILDUP,
+        required=True,
         help="perpendicular to the roof plane: krokvy, insulation, lining",
     )
     headroom.add_argument(
         "--floor-buildup",
         type=float,
-        default=FLOOR_BUILDUP,
+        required=True,
         help="vertical, above the wall top",
     )
     headroom.add_argument(
-        "--knee", type=float, default=KNEE_HEIGHT, help="nadmurovka height"
+        "--knee", type=float, required=True, help="nadmurovka height; 0 for none"
     )
     headroom.add_argument(
         "--collar",
         type=float,
-        default=None,
-        help="klieština underside above the wall top; omit for a roof with none. "
-        "Below h_min + floor build-up it rules the attic out entirely",
+        help="klieština underside above the wall top. The one optional input: "
+        "omit it for a roof with no collar tie. Below h_min + floor build-up it "
+        "rules the attic out entirely",
     )
 
     parser.add_argument(
         "--eur-per-m2",
         type=float,
-        default=EUR_PER_M2,
+        required=True,
         help="all-in roof rate per m² of roof surface",
     )
     return parser
@@ -157,10 +128,7 @@ def main() -> None:
     except ValueError as invalid:
         parser.error(str(invalid))
 
-    print(
-        f"h_min = {attic.h_min:g} m (assumption), "
-        f"roof at {costs.eur_per_m2:g} EUR/m2 all-in\n"
-    )
+    print(f"h_min = {attic.h_min:g} m, roof at {costs.eur_per_m2:g} EUR/m2 all-in\n")
     print(table.round(2).to_string(index=False))
 
     if args.csv_path is not None:

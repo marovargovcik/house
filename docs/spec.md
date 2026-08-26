@@ -236,9 +236,10 @@ knee wall is not free of height, which matters against a height limit.
 
 ### 3d. Drawing the sweep
 
-A table of fifteen rows does not show what a pitch *is*. `uv run house --html
-roof.html` writes one self-contained page: every swept row drawn as a gable
-section and a plan, with the numbers beside it.
+A table of fifteen rows does not show what a pitch *is*. `uv run house` with
+`--html` writes one self-contained page: every swept row drawn as a gable
+section and a plan, with the numbers beside it. Every sweep input is a required
+flag — `README.md` carries the invocation for the design as it stands.
 
 The page is **Slovak throughout** — prose, dimension labels, table headers, and
 number formatting (decimal comma, no-break space between thousands) — because it
