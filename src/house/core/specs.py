@@ -87,42 +87,20 @@ class AtticSpec:
 
 
 @dataclass(frozen=True, slots=True)
-class RoofingLayer:
-    """One priced layer of the roof build-up, in EUR per m² of roof surface."""
+class CostSpec:
+    """One all-in rate for the whole roof, in EUR per m² of roof surface.
 
-    name: str
+    Covers everything the roof costs — krov, insulation, membrane, battens,
+    covering, gutters, labour — because that is how a builder quotes a roof, and
+    one number carries exactly the precision this model has. Charged on **gross**
+    area including the overhang, a deliberate over-estimate in the
+    budgeting-safe direction (`docs/decisions.md`).
+    """
+
     eur_per_m2: float
 
     def __post_init__(self) -> None:
-        if not _is_non_negative(self.eur_per_m2):
-            raise ValueError(f"{self.name}: rate must be non-negative")
-
-
-@dataclass(frozen=True, slots=True)
-class CostSpec:
-    """Ballpark rates, all configurable.
-
-    When the real all-in builder's quote arrives it replaces `layers` with a
-    single entry covering material and labour, and the rest of the model is
-    unaffected.
-    """
-
-    layers: tuple[RoofingLayer, ...]
-    krov_eur_per_m2: float
-    gutter_eur_per_m: float
-
-    def __post_init__(self) -> None:
-        if not self.layers:
-            raise ValueError(
-                "layers must not be empty — an empty stack prices roofing at 0 "
-                "and hides a whole cost category inside a plausible total"
-            )
-        if not (
-            _is_non_negative(self.krov_eur_per_m2)
-            and _is_non_negative(self.gutter_eur_per_m)
-        ):
-            raise ValueError("cost rates must be non-negative")
-
-    @property
-    def roofing_eur_per_m2(self) -> float:
-        return sum(layer.eur_per_m2 for layer in self.layers)
+        # Positive, not merely non-negative: a zero rate prices the entire roof
+        # at nothing and still prints a plausible-looking total.
+        if not _is_positive(self.eur_per_m2):
+            raise ValueError(f"roof rate must be positive, got {self.eur_per_m2}")

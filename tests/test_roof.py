@@ -5,19 +5,11 @@ import math
 import pytest
 
 from house.core import roof
-from house.core.specs import CostSpec, HouseSpec, RoofingLayer, RoofSpec
+from house.core.specs import CostSpec, HouseSpec, RoofSpec
 
 HOUSE = HouseSpec(width=9.0, length=10.0)
 BARE = {"overhang_eave": 0.0, "overhang_gable": 0.0}
-COSTS = CostSpec(
-    layers=(
-        RoofingLayer(name="sheet", eur_per_m2=25.0),
-        RoofingLayer(name="membrane", eur_per_m2=5.0),
-        RoofingLayer(name="battens", eur_per_m2=8.0),
-    ),
-    krov_eur_per_m2=60.0,
-    gutter_eur_per_m=30.0,
-)
+COSTS = CostSpec(eur_per_m2=110.0)
 
 
 def test_area_scales_with_pitch() -> None:
@@ -67,15 +59,16 @@ def test_geometry_at_30_degrees() -> None:
     )
 
 
-def test_cost_splits_area_rates_from_the_per_metre_gutter() -> None:
-    """127.2018 m² at 38 + 60 EUR/m², plus 21.6 m of gutter at 30 EUR/m.
+def test_cost_is_one_all_in_rate_charged_on_gross_area() -> None:
+    """127.2018 m² at 110 EUR/m² -> 13 992.20 EUR.
 
-    Pins that roofing and krov are charged on gross area (deliberate
-    over-estimate, docs/decisions.md) while gutters are charged per metre.
+    Gross means the overhang is charged too: the same house without it is
+    103.923 m², so dropping the overhang would cut ~2 561 EUR. Pinning both
+    fixes the deliberate over-estimate (docs/decisions.md), not just the
+    multiplication.
     """
     geom = roof.geometry(HOUSE, RoofSpec(pitch_deg=30.0))
-    cost = roof.cost(geom, COSTS)
-    assert cost.roofing == pytest.approx(4833.6688, abs=1e-3)
-    assert cost.krov == pytest.approx(7632.1087, abs=1e-3)
-    assert cost.gutters == pytest.approx(648.0)
-    assert cost.total == pytest.approx(13113.7775, abs=1e-3)
+    bare = roof.geometry(HOUSE, RoofSpec(pitch_deg=30.0, **BARE))
+
+    assert roof.cost(geom, COSTS) == pytest.approx(13992.1992, abs=1e-3)
+    assert roof.cost(bare, COSTS) == pytest.approx(11431.5353, abs=1e-3)

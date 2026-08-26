@@ -13,7 +13,7 @@ from typing import Any
 
 import pandas as pd
 
-from house.core.specs import AtticSpec, HouseSpec, RoofSpec
+from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
 from house.interpreters import to_svg
 
 _NUMBERS: tuple[tuple[str, str], ...] = (
@@ -98,14 +98,27 @@ def _sections(
 
 
 def _assumptions(
-    length: float, attic: AtticSpec, overhang_eave: float, overhang_gable: float
+    length: float,
+    attic: AtticSpec,
+    costs: CostSpec,
+    overhang_eave: float,
+    overhang_gable: float,
 ) -> str:
+    """Every input the cards are drawn and priced from, stated on the page.
+
+    A cost figure with no rate beside it is unreadable a month later, so the rate
+    travels with the report rather than living only in the entry point.
+    """
     items: Iterable[str] = (
         f"length {length:g} m",
         f"h_min {attic.h_min:g} m (assumption — the Slovak norm is still open)",
         f"knee wall {attic.knee_height:g} m",
         f"odkvapový presah {overhang_eave:g} m, štítový presah {overhang_gable:g} m",
-        "cost rates are placeholders",
+        (
+            f"roof {costs.eur_per_m2:g} €/m² of roof surface — all-in: krov, "
+            "insulation, membrane, battens, covering, gutters, labour"
+        ),
+        "charged on gross area, overhang included (a deliberate over-estimate)",
     )
     return "".join(f"<li>{item}</li>" for item in items)
 
@@ -114,6 +127,7 @@ def write_html(
     table: pd.DataFrame,
     length: float,
     attic: AtticSpec,
+    costs: CostSpec,
     overhang_eave: float,
     overhang_gable: float,
     path: Path,
@@ -123,7 +137,7 @@ def write_html(
     page = _PAGE.format(
         style=_STYLE + to_svg.STYLE,
         defs=to_svg.defs_svg(),
-        assumptions=_assumptions(length, attic, overhang_eave, overhang_gable),
+        assumptions=_assumptions(length, attic, costs, overhang_eave, overhang_gable),
         sections=_sections(records, length, attic, overhang_eave, overhang_gable),
         table=table.round(2).to_html(
             index=False, border=0, classes="sweep", na_rep="—"

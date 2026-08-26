@@ -14,17 +14,6 @@ class RoofGeometry:
     gutter_run: float
 
 
-@dataclass(frozen=True, slots=True)
-class RoofCost:
-    roofing: float
-    krov: float
-    gutters: float
-
-    @property
-    def total(self) -> float:
-        return self.roofing + self.krov + self.gutters
-
-
 def ridge_height(house: HouseSpec, roof: RoofSpec) -> float:
     """Height of the ridge (hrebeň) above the wall top."""
     return house.width / 2 * math.tan(math.radians(roof.pitch_deg))
@@ -56,7 +45,8 @@ def gutter_run(house: HouseSpec, roof: RoofSpec) -> float:
     """Gutter (odkvapový žľab) length along both eaves.
 
     A horizontal line at the eave, so unlike the roof surface it does not grow
-    with pitch. Downpipes (zvody) are not modelled — they need an eave height,
+    with pitch. Reported for ordering, not for costing — gutters are inside the
+    all-in rate. Downpipes (zvody) are not modelled: they need an eave height,
     which is outside this module.
     """
     return 2 * (house.length + 2 * roof.overhang_gable)
@@ -71,14 +61,12 @@ def geometry(house: HouseSpec, roof: RoofSpec) -> RoofGeometry:
     )
 
 
-def cost(geom: RoofGeometry, costs: CostSpec) -> RoofCost:
-    """Ballpark cost of the roof.
+def cost(geom: RoofGeometry, costs: CostSpec) -> float:
+    """Ballpark cost of the roof: one all-in rate on gross surface area.
 
-    Every layer is charged on gross area including the overhang — a deliberate
-    over-estimate in the budgeting-safe direction (`docs/decisions.md`).
+    Gross means the overhang is charged too — a deliberate over-estimate in the
+    budgeting-safe direction (`docs/decisions.md`). Gutters live inside the rate,
+    so `gutter_run` is geometry for ordering material now, like `rafter_length`,
+    and no longer a cost input.
     """
-    return RoofCost(
-        roofing=geom.surface_area * costs.roofing_eur_per_m2,
-        krov=geom.surface_area * costs.krov_eur_per_m2,
-        gutters=geom.gutter_run * costs.gutter_eur_per_m,
-    )
+    return geom.surface_area * costs.eur_per_m2

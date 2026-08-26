@@ -107,14 +107,14 @@ Both overhangs are **horizontal projections** (see `decisions.md`):
 The `width / cos(θ)` term already covers both roof planes: each half is
 `(width/2)/cos(θ)`, times two.
 
-Material cost = area × €/m² per layer (roofing sheet, membrane, battens,
-insulation), charged on **gross** area including the overhang — a deliberate
-over-estimate, see `decisions.md`.
+Cost = roof surface area × **one all-in €/m²** covering the whole roof: krov,
+insulation, membrane, battens, covering, gutters, and labour. A builder quotes a
+roof as one number, and one number carries exactly the precision this model has —
+see `decisions.md`. It is charged on **gross** area including the overhang, a
+deliberate over-estimate in the same direction.
 
-Krov (the load-bearing structure) is priced the same way — €/m² of roof surface,
-a ballpark that avoids guessing a rafter count and spacing we have not designed
-yet. Rafter length is reported alongside it for timber ordering, not used in the
-cost.
+Rafter length and gutter run are reported alongside the cost for ordering
+material, not used in it.
 
 Sanity checks to pin in tests:
 - flat-ish roof (θ → 0) → area ≈ footprint

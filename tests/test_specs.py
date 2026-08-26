@@ -35,8 +35,10 @@ def test_non_finite_dimensions_are_rejected(bad: float) -> None:
         AtticSpec(h_min=bad)
 
 
-def test_empty_layer_stack_is_rejected() -> None:
-    """An empty stack prices roofing at 0 and still prints a plausible total next
-    to real krov and gutter figures — a whole cost category missing in silence."""
-    with pytest.raises(ValueError, match="layers"):
-        CostSpec(layers=(), krov_eur_per_m2=60.0, gutter_eur_per_m=30.0)
+@pytest.mark.parametrize("bad", [0.0, -1.0, float("nan")])
+def test_non_positive_roof_rate_is_rejected(bad: float) -> None:
+    """A zero rate prices the whole roof at nothing and still prints a plausible
+    total — a cost category missing in silence. That is why the all-in rate has
+    to be positive rather than merely non-negative."""
+    with pytest.raises(ValueError, match="roof rate"):
+        CostSpec(eur_per_m2=bad)

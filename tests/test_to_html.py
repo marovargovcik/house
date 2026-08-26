@@ -6,14 +6,10 @@ from pathlib import Path
 import pandas as pd
 
 from house.core import sweep
-from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofingLayer, RoofSpec
+from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
 from house.interpreters import to_html, to_svg
 
-COSTS = CostSpec(
-    layers=(RoofingLayer(name="test", eur_per_m2=38.0),),
-    krov_eur_per_m2=60.0,
-    gutter_eur_per_m=30.0,
-)
+COSTS = CostSpec(eur_per_m2=110.0)
 
 
 def _table() -> pd.DataFrame:
@@ -35,6 +31,7 @@ def test_report_has_a_card_per_row_and_no_external_assets(tmp_path: Path) -> Non
         table,
         length=10.0,
         attic=AtticSpec(h_min=1.9),
+        costs=COSTS,
         overhang_eave=0.6,
         overhang_gable=0.4,
         path=path,

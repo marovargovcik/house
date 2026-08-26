@@ -2,15 +2,15 @@
 
 The imperative shell — it picks the inputs, calls the pure core, and prints. Every
 number here is a stated assumption rather than a default hidden in the core: the
-core takes `h_min` with no default by decision, and these cost rates are ballpark
-placeholders until the builder's quote lands (`docs/decisions.md`, open items).
+core takes `h_min` with no default by decision, and the roof rate is a single
+all-in EUR/m² figure rather than a layer stack (`docs/decisions.md`).
 """
 
 import argparse
 from pathlib import Path
 
 from house.core import sweep
-from house.core.specs import AtticSpec, CostSpec, RoofingLayer
+from house.core.specs import AtticSpec, CostSpec
 from house.interpreters import to_csv, to_html
 
 # Footprint per the locked placement in `docs/spec.md` §4b: "I"-shape, 10-11 m
@@ -28,13 +28,9 @@ OVERHANG_GABLE = 0.4
 # on the Slovak *obytná plocha* norm.
 H_MIN = 1.9
 
-# Placeholder rates: one all-in layer standing in for the per-layer breakdown
-# that is still an open item.
-COSTS = CostSpec(
-    layers=(RoofingLayer(name="all-in placeholder", eur_per_m2=38.0),),
-    krov_eur_per_m2=60.0,
-    gutter_eur_per_m=30.0,
-)
+# All-in roof rate: krov, insulation, membrane, battens, covering, gutters, and
+# labour in one number, the way a builder quotes it (`docs/decisions.md`).
+COSTS = CostSpec(eur_per_m2=110.0)
 
 
 def main() -> None:
@@ -65,7 +61,9 @@ def main() -> None:
         overhang_eave=OVERHANG_EAVE,
         overhang_gable=OVERHANG_GABLE,
     )
-    print(f"h_min = {H_MIN} m (assumption), costs are placeholders\n")
+    print(
+        f"h_min = {H_MIN} m (assumption), roof at {COSTS.eur_per_m2:g} EUR/m2 all-in\n"
+    )
     print(table.round(2).to_string(index=False))
 
     if args.csv_path is not None:
@@ -77,6 +75,7 @@ def main() -> None:
             table,
             length=LENGTH,
             attic=attic,
+            costs=COSTS,
             overhang_eave=OVERHANG_EAVE,
             overhang_gable=OVERHANG_GABLE,
             path=args.html,

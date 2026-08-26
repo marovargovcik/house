@@ -69,6 +69,18 @@ here first.
   per-layer `covers_overhang` flag unless explicitly asked. Possible future
   refinement if insulation cost turns out to dominate the layer stack.
 
+- **One all-in €/m² for the roof, not a layer stack.** The per-layer roofing
+  rates, the separate krov €/m², and the per-metre gutter rate collapsed into a
+  single figure covering structure, insulation, membrane, battens, covering,
+  gutters, and labour. A builder quotes the roof as one number; splitting it
+  invited a precision the inputs never had. The gross-area decision above still
+  stands and now applies to that single rate. *Consequence:* gutters no longer
+  scale with gutter **run** — they ride on roof **area**. For a rectangle of
+  roughly these proportions that is fine for scoping, but it drifts for a long,
+  narrow house, so `gutter_run` stays reported as geometry for ordering.
+  **Do not** re-introduce per-layer costing unless a quote actually arrives
+  broken down that way.
+
 - **`h_min` is a required parameter with no default.** Prevents an unverified
   value silently ending up in a result. Sweeps run at 1.9 m explicitly until the
   Slovak *obytná plocha* norm is confirmed. **Do not** add a default value until
@@ -83,4 +95,3 @@ here first.
   (*nadmurovka*) of ~1.3 m and cite a 20–45° pitch range for a habitable attic.
   Treat these as **indicative sanity-check anchors only** — the binding `h_min`
   and habitable-area definition needs the actual norm, not a builder's blog.
-- Per-layer roofing cost breakdown (€/m² per layer) for the actual chosen spec.

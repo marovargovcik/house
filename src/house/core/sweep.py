@@ -54,12 +54,9 @@ def width_by_pitch(
                     "usable_width_m": usable.usable_width,
                     "usable_area_m2": usable.usable_area,
                     "usable_fraction": usable.usable_area / (width * length),
-                    "roofing_eur": cost.roofing,
-                    "krov_eur": cost.krov,
-                    "gutters_eur": cost.gutters,
-                    "total_eur": cost.total,
+                    "total_eur": cost,
                     "eur_per_usable_m2": (
-                        cost.total / usable.usable_area
+                        cost / usable.usable_area
                         if usable.usable_area > 0
                         else float("nan")
                     ),

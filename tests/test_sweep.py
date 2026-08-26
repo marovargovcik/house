@@ -6,13 +6,9 @@ import pandas as pd
 import pytest
 
 from house.core import sweep
-from house.core.specs import AtticSpec, CostSpec, RoofingLayer
+from house.core.specs import AtticSpec, CostSpec
 
-COSTS = CostSpec(
-    layers=(RoofingLayer(name="all-in", eur_per_m2=38.0),),
-    krov_eur_per_m2=60.0,
-    gutter_eur_per_m=30.0,
-)
+COSTS = CostSpec(eur_per_m2=110.0)
 
 
 def test_row_matches_the_hand_checked_case_and_flags_unusable_pitches() -> None:
@@ -33,8 +29,8 @@ def test_row_matches_the_hand_checked_case_and_flags_unusable_pitches() -> None:
     row = table[table["pitch_deg"] == 30.0].iloc[0]
     assert row["roof_area_m2"] == pytest.approx(127.2018, abs=1e-4)
     assert row["usable_area_m2"] == pytest.approx(24.1821, abs=1e-4)
-    assert row["total_eur"] == pytest.approx(13113.7775, abs=1e-4)
-    assert row["eur_per_usable_m2"] == pytest.approx(542.2934, abs=1e-4)
+    assert row["total_eur"] == pytest.approx(13992.1992, abs=1e-4)
+    assert row["eur_per_usable_m2"] == pytest.approx(578.6188, abs=1e-4)
     assert row["usable_fraction"] == pytest.approx(0.2687, abs=1e-4)
 
     shallow = table[table["pitch_deg"] == 20.0].iloc[0]
