@@ -121,6 +121,33 @@ def _sections(
     )
 
 
+def _collar_note(attic: AtticSpec) -> str:
+    """What the collar tie does to this sweep, stated either way.
+
+    Without one the useful figure is the constraint — the lowest a klieština can
+    sit and still leave `h_min` under it. With one, the page has to say whether
+    it clears, because a collar that does not zeroes every row and the drawings
+    would otherwise show that with no reason given.
+    """
+    lowest = sk.trimmed(attic_calc.min_collar_height(attic))
+    if attic.collar_above_wall_top is None:
+        return (
+            f"klieština musí byť najmenej {lowest} m nad korunou muriva, inak pod "
+            "ňou nikde nie je podchodná výška (v tomto prehľade žiadna nie je)"
+        )
+    height = sk.trimmed(attic.collar_above_wall_top)
+    if attic_calc.collar_blocks(attic):
+        return (
+            f"klieština {height} m nad korunou muriva — príliš nízko, musela by "
+            f"byť najmenej {lowest} m, takže podkrovie nie je využiteľné pri "
+            "žiadnom sklone"
+        )
+    return (
+        f"klieština {height} m nad korunou muriva — vyhovuje, najmenej je "
+        f"potrebných {lowest} m"
+    )
+
+
 def _assumptions(
     length: float,
     attic: AtticSpec,
@@ -146,11 +173,7 @@ def _assumptions(
             "čím je strecha strmšia"
         ),
         (f"skladba podlahy {sk.trimmed(attic.floor_buildup)} m nad korunou muriva"),
-        (
-            "klieština musí byť najmenej "
-            f"{sk.trimmed(attic_calc.min_collar_height(attic))} m nad korunou "
-            "muriva, inak pod ňou nikde nie je podchodná výška"
-        ),
+        _collar_note(attic),
         (
             f"odkvapový presah {sk.trimmed(overhang_eave)} m, "
             f"štítový presah {sk.trimmed(overhang_gable)} m"

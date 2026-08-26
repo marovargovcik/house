@@ -23,7 +23,18 @@ Everything runs through `uv run`; there is no virtualenv to activate.
 
 `--html` writes one self-contained page — every row of the sweep drawn as a
 gable section and a plan, all at one shared scale so widths and pitches compare
-by eye. Open it in a browser; print to PDF from there if you need paper.
+by eye. Open it in a browser; print to PDF from there if you need paper. The
+page is in Slovak, being what goes to the projektant.
+
+Every sweep input is a flag, with the current design as its default —
+`uv run house --help` lists them with those defaults. So a what-if is a command
+line rather than an edit:
+
+```bash
+uv run house --widths 10 --pitches 35 40 45 --knee 0.5   # what a nadmurovka buys
+uv run house --collar 2.4                                # with a collar tie
+uv run house --roof-buildup 0.24 --floor-buildup 0.15    # a leaner build-up
+```
 
 ## Development
 
