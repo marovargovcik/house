@@ -15,6 +15,7 @@ produces is pinned by a test against a hand-computed reference.
 ```bash
 uv sync                                  # create the venv from uv.lock
 git config core.hooksPath .githooks      # enable the pre-commit gate (per clone)
+npm --prefix web install                 # the browser page: Pyodide + its checks
 ```
 
 Everything runs through `uv run`; there is no virtualenv to activate.
@@ -60,6 +61,36 @@ Changing one input is a command line rather than an edit:
 --roof-buildup 0.24 --floor-buildup 0.15   # a leaner build-up
 ```
 
+### In a browser
+
+The same sweep as a web page — a form for every flag above, the drawn report, the
+table, and a CSV download. Useful for trying a width or a pitch without a
+terminal.
+
+```bash
+uv run web
+```
+
+That serves the repo root on port 8000 and opens the page. The **repo root**, not
+`web/`: the page fetches `../src/`, so both have to be under what is served —
+which is also why any other static server (`python3 -m http.server 8000`,
+`npx serve .`) has to be started from here, not from `web/`. Source is fetched
+with `no-store`, so an edit shows up on reload whatever the server caches.
+
+It runs **`src/house/` itself**, unmodified, on CPython 3.14 compiled to
+WebAssembly ([Pyodide](https://pyodide.org)), served from `web/node_modules` —
+so it needs `npm --prefix web install` first, and then no network at all.
+There is no build step and nothing generated: the page fetches the modules from
+`src/` as you serve them, so editing a core module and reloading is the whole
+loop. `src/house/web.py` is the entry point it calls — the pure counterpart to
+`cli.py`.
+
+> [!NOTE]
+> Full-precision CSV values can differ from the CLI's in the last digit or two
+> (~3e-15 relative): WebAssembly's libm and your machine's disagree by one ulp on
+> `tan(radians(30))`. The table and the report are byte-identical — they round
+> long before that. See `docs/decisions.md`.
+
 ## Development
 
 ```bash
@@ -67,11 +98,68 @@ uv run pytest                # tests
 uv run ruff format .         # format
 uv run ruff check --fix .    # lint + import sort
 uv run mypy .                # types
+npm --prefix web run check   # the browser page: lint, format check, types
+npm --prefix web run format  # format web/ (JS, HTML, CSS, JSON)
 .githooks/pre-commit         # all gates, exactly as the commit hook runs them
 ```
 
-Formatting and lint autofix also run on save in VS Code — install the
-`charliermarsh.ruff` extension and `.vscode/settings.json` handles the rest.
+The browser page has the same three gates the Python does, one tool each:
+
+| | Python | `web/` |
+|---|---|---|
+| Lint | `ruff check` | `oxlint` |
+| Format | `ruff format` | `oxfmt` — HTML, CSS, JS/TS and JSON alike |
+| Types | `mypy` (strict) | `tsc` (strict) |
+
+The files under `web/` are plain JavaScript ES modules the browser loads
+unmodified — nothing is compiled or bundled. They carry JSDoc annotations and are
+checked by the real `tsc` under `strict`, which is what `.ts` files would get. Svelte, or `.ts` source, would
+each put a compiler between you and the page, which is the one thing this page
+does not have.
+
+`oxfmt` formats `index.html` and `style.css` as well as the JavaScript, so there
+is no separate HTML or CSS tool. It also sorts imports, which is why oxlint's
+`sort-imports` is off: the formatter owns ordering, the same way it owns line
+length on the Python side.
+
+`oxlint` runs **all four categories** — `correctness`, `suspicious`, `pedantic`
+and `style` — with the `unicorn`, `typescript`, `oxc`, `import` and `jsdoc`
+plugins on. Being opinionated is the point; `web/.oxlintrc.json` then turns off a
+short list of rules, and each one is off for a stated reason rather than because
+it was noisy:
+
+| Off | Why |
+|---|---|
+| `no-inline-comments` | it fires on `/** @type {...} */ (value)` casts, which *must* be inline — that is the cast syntax |
+| `one-var` | it wants one combined `const` per scope; every declaration here is its own |
+| `sort-keys` | `Payload`'s field order mirrors the CLI flags in `README.md`; alphabetising it would hide that |
+| `sort-imports` | `oxfmt` sorts imports, and two tools fighting over order is worse than either |
+| `no-ternary` | bans *all* ternaries, not just nested ones — `no-nested-ternary` stays on |
+| `unicorn/no-null` | `null` is the JSON boundary with Python's `None`; `undefined` has no JSON form |
+| `unicorn/prefer-query-selector` | `getElementById` is deliberate, see `scripts/ui.js` |
+| `unicorn/no-array-callback-reference` | it and `unicorn/prefer-native-coercion-functions` directly contradict each other on `.map(Number)` |
+| `import/no-named-export`, `import/prefer-default-export` | they want one default export per module; every module here exports several by name |
+
+Two rules are **tuned rather than disabled**: `no-magic-numbers` ignores
+`0`, `1` and `-1`, and `max-statements` allows 15.
+
+> [!NOTE]
+> `oxlint` implements neither `import/no-unresolved` nor `jsdoc/check-param-names`,
+> so it will not catch a bad import path or a `@param` naming a parameter that
+> does not exist. `tsc` catches both (`TS2307` and `TS8024`), which is why the
+> `check` script runs it too.
+
+Formatting and lint autofix run on save in VS Code for both halves of the
+repo — Python through `charliermarsh.ruff`, and HTML/CSS/JS/TS/JSON through
+`oxc.oxc-vscode`. `.vscode/extensions.json` prompts to install both;
+`.vscode/settings.json` handles the rest.
+
+Neither extension uses its own bundled binary: ruff is pinned by
+`ruff.importStrategy: fromEnvironment`, and the Oxc extension auto-detects
+`web/node_modules`. So the editor runs the same versions the commit hook does and
+the two cannot drift. Markdown and TOML are deliberately left out of format-on-
+save — `oxfmt` handles both, but it would reflow the hand-wrapped prose in this
+file and rewrite `pyproject.toml`, and no gate checks either.
 
 ## Documentation
 

@@ -20,10 +20,13 @@ Everything runs through `uv run` — never activate the virtualenv manually.
 |------|---------|
 | Setup (fresh clone) | `uv sync && git config core.hooksPath .githooks` |
 | Run | `uv run cli` — every input is a required flag; README.md has the current design's invocation |
+| Run in a browser | `uv run web` — serves the repo root and opens the page; needs `npm --prefix web install` |
 | Tests | `uv run pytest` — one module: `uv run pytest tests/test_roof.py` |
 | Format | `uv run ruff format .` |
 | Lint | `uv run ruff check --fix .` |
 | Types | `uv run mypy .` |
+| Browser page gates | `npm --prefix web run check` — oxlint, oxfmt, tsc |
+| Format the browser page | `npm --prefix web run format` — HTML, CSS, JS in one |
 | All gates, as pre-commit runs them | `.githooks/pre-commit` |
 
 > [!WARNING]
@@ -131,6 +134,18 @@ src/house/
     to_html.py     # sweep + drawings -> one self-contained page
     sk.py          # Slovak number formatting for the report
     to_scene.py    # later — geometry → JSON for a JS/Three.js viewer
+  cli.py           # entry point: flags -> core -> stdout and files
+  web.py           # entry point: JSON -> core -> strings. Pure; the browser's.
+web/
+  index.html       # the browser UI's markup; fetches src/ live, no build step
+  style.css        # its styling (the report brings its own)
+  scripts/
+    app.js         # entry point: boot, then let the form drive it
+    dom.js         # the page's elements, looked up once and class-checked
+    form.js        # reading the form into a payload, and refusing a bad one
+    view.js        # display state; the only thing that writes to the panes
+    runtime.js     # Pyodide, and the module list it copies into it
+  package.json     # pyodide itself, plus oxlint, oxfmt, typescript
 tests/             # hand-checked cases pinning every output; mirrors src/house/
 docs/
   spec.md          # formulas, terrain data, rationale, caveats
@@ -277,7 +292,11 @@ names and bad attribute access without arguing with mypy about inference.
 - **On save** — `.vscode/settings.json` runs `ruff format` plus ruff's autofix and
   import sorting via the `charliermarsh.ruff` extension. It uses the project's
   pinned ruff (`ruff.importStrategy: fromEnvironment`), not the extension's bundled
-  copy, so the editor and CI can't drift apart.
+  copy, so the editor and CI can't drift apart. The same rule covers the browser
+  page: the `oxc.oxc-vscode` extension formats HTML, CSS, JS/TS and JSON with
+  `oxfmt` and applies `source.fixAll.oxc`, auto-detecting the pinned binaries in
+  `web/node_modules`. Config discovery is nested, so `web/.oxfmtrc.json` and
+  `web/.oxlintrc.json` apply even though the workspace root is one level up.
 - **As you type** — Pylance type-checks in the editor. It is **advisory only**;
   see [Two type checkers](#two-type-checkers-mypy-wins).
 - **On commit** — `.githooks/pre-commit` runs `ruff format --check`, `ruff check`,

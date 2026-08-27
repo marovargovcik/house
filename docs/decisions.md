@@ -172,6 +172,24 @@ here first.
   Slovak *obytná plocha* norm is confirmed. **Do not** add a default value until
   the norm is confirmed and documented here.
 
+- **The browser build is Pyodide, and it runs `src/` unmodified.** Real CPython
+  3.14 in WebAssembly, so no transform, no stdlib shims, and no constraints on
+  what `src/` may use. MicroPython was tried first and rejected: at ~770 kB
+  against Pyodide's ~10 MB it is far smaller, but it discards annotations
+  entirely — `@dataclass` and `NamedTuple` cannot find their fields — which
+  forced a build-time source transform, four shim modules, and a ban on four
+  ordinary Python constructs in `src/`. **Do not** re-try MicroPython for the
+  size win; the cost is a second dialect of Python to maintain.
+
+- **Full-precision CSV values may differ between the browser and the CLI in the
+  last digits.** WebAssembly's libm and the host's disagree by one ulp on
+  `tan(radians(30))`, which the sweep magnifies to ~3e-15 relative. The table and
+  the HTML report are byte-identical, because they round long before that.
+  Confirmed identical under both MicroPython and Pyodide, so it is a property of
+  the WASM libm, not of any one runtime. **Do not** "fix" it by rounding the CSV —
+  it carries what the calculation produced on purpose, and the difference is
+  orders of magnitude below what this model claims.
+
 - **Kept the current B2B base engagement** (context only — not a code decision).
 
 ## Open items
