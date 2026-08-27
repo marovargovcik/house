@@ -1,0 +1,208 @@
+/* The drawn report is not styled from here: it arrives from
+   interpreters/to_html.py as a self-contained document in an iframe. */
+
+:root {
+  --bg: #fbfaf8;
+  --panel: #fff;
+  --ink: #1c1a17;
+  --dim: #7a736a;
+  --accent: #b4530f;
+  --rule: #e2ded7;
+  --bad: #a3271b;
+  --field: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171614;
+    --panel: #201e1b;
+    --ink: #ece8e1;
+    --dim: #9c948a;
+    --accent: #e2853b;
+    --rule: #322e29;
+    --bad: #e2705f;
+    --field: #1a1815;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font:
+    15px/1.5 ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  display: grid;
+  grid-template-columns: 330px 1fr;
+  height: 100vh;
+}
+@media (max-width: 800px) {
+  body {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+form {
+  border-right: 1px solid var(--rule);
+  background: var(--panel);
+  padding: 1.25rem 1.25rem 3rem;
+  overflow-y: auto;
+}
+h1 {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+.sub {
+  color: var(--dim);
+  font-size: 0.8rem;
+  margin: 0 0 1.25rem;
+}
+fieldset {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0 0 1rem;
+  padding: 0.75rem 0 0;
+}
+legend {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+label {
+  display: block;
+  margin: 0 0 0.6rem;
+}
+label > span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--dim);
+  margin-bottom: 0.15rem;
+}
+input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--field);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+}
+input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.6rem;
+}
+button {
+  width: 100%;
+  padding: 0.55rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 5px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--rule);
+  font-weight: 500;
+}
+.actions {
+  display: grid;
+  gap: 0.5rem;
+  position: sticky;
+  bottom: 0;
+  padding-top: 0.75rem;
+  background: linear-gradient(transparent, var(--panel) 35%);
+}
+main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.bar {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+  flex: none;
+}
+.bar .tab {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.82rem;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  width: auto;
+  font-weight: 500;
+}
+.bar .tab[aria-selected="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+.bar .status {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--dim);
+}
+.view {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: var(--bg);
+}
+pre {
+  margin: 0;
+  padding: 1rem;
+  font:
+    12.5px/1.5 ui-monospace,
+    Menlo,
+    monospace;
+}
+.problems {
+  padding: 1rem;
+  color: var(--bad);
+}
+.problems ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+}
+.hidden {
+  display: none !important;
+}
+.note {
+  font-size: 0.75rem;
+  color: var(--dim);
+  margin-top: 1rem;
+}

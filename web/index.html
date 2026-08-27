@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>house — sweep</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      { "imports": { "pyodide": "./node_modules/pyodide/pyodide.mjs" } }
+    </script>
+  </head>
+  <body>
+    <form id="form">
+      <h1>house</h1>
+      <p class="sub">Strecha a podkrovie — rozmietanie šírky a sklonu.</p>
+      <fieldset>
+        <legend>Pôdorys</legend>
+        <label>
+          <span>šírky (m, rozmietané)</span>
+          <input name="widths" value="9 10 11" required />
+        </label>
+        <label>
+          <span>sklony (°, rozmietané)</span>
+          <input name="pitches_deg" value="25 30 35 40 45" required />
+        </label>
+        <label>
+          <span>dĺžka (m)</span>
+          <input name="length" value="25" required />
+        </label>
+        <div class="row">
+          <label>
+            <span>presah odkvap (m)</span>
+            <input name="overhang_eave" value="0.6" required />
+          </label>
+          <label>
+            <span>presah štít (m)</span>
+            <input name="overhang_gable" value="0.4" required />
+          </label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Svetlá výška</legend>
+        <label>
+          <span>h_min (m)</span>
+          <input name="h_min" value="1.9" required />
+        </label>
+        <div class="row">
+          <label>
+            <span>skladba strechy (m)</span>
+            <input name="roof_buildup" value="0.30" required />
+          </label>
+          <label>
+            <span>skladba podlahy (m)</span>
+            <input name="floor_buildup" value="0.20" required />
+          </label>
+        </div>
+        <div class="row">
+          <label>
+            <span>nadmurovka (m)</span>
+            <input name="knee_height" value="0" required />
+          </label>
+          <label>
+            <span>klieština (m)</span>
+            <input name="collar_above_wall_top" value="0" required />
+          </label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Cena</legend>
+        <label>
+          <span>EUR / m² strechy</span>
+          <input name="eur_per_m2" value="110" required />
+        </label>
+      </fieldset>
+      <div class="actions">
+        <button type="submit" id="run" disabled>Prepočítať</button>
+        <button type="button" class="ghost" id="download-csv" disabled>
+          Stiahnuť CSV
+        </button>
+        <button type="button" class="ghost" id="download-html" disabled>
+          Stiahnuť report
+        </button>
+      </div>
+      <p class="note">
+        Prázdna klieština alebo 0 znamená žiadna. Počíta CPython 3.14 (Pyodide) priamo v
+        prehliadači —
+        <code>uv run cli</code>
+        dáva tie isté čísla.
+      </p>
+    </form>
+
+    <main>
+      <div class="bar">
+        <button class="tab" data-view="report" aria-selected="true">Report</button>
+        <button class="tab" data-view="table" aria-selected="false">Tabuľka</button>
+        <button class="tab" data-view="csv" aria-selected="false">CSV</button>
+        <span class="status" id="status">načítavam Python…</span>
+      </div>
+      <div class="view">
+        <div class="problems hidden" id="problems"></div>
+        <iframe id="report" title="report"></iframe>
+        <pre id="table" class="hidden"></pre>
+        <pre id="csv" class="hidden"></pre>
+      </div>
+    </main>
+
+    <script type="module" src="scripts/app.js"></script>
+  </body>
+</html>
