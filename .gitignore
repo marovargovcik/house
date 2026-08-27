@@ -5,3 +5,6 @@ __pycache__/
 build/
 dist/
 wheels/
+
+# Type checking for web/app.js — dev only; the page ships the .js as written.
+web/node_modules/

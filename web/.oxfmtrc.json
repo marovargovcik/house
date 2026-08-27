@@ -1,0 +1,7 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 88,
+  "ignorePatterns": ["node_modules"],
+  "sortImports": true,
+  "htmlWhitespaceSensitivity": "ignore"
+}

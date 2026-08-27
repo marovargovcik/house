@@ -1,0 +1,18 @@
+{
+  "name": "house-web",
+  "private": true,
+  "description": "Lint, format and type checking for the browser page. No build step: app.js ships as written.",
+  "type": "module",
+  "scripts": {
+    "check": "oxlint --deny-warnings . && oxfmt --check . && tsc",
+    "format": "oxfmt .",
+    "lint": "oxlint --deny-warnings .",
+    "types": "tsc"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.65.0",
+    "oxlint": "^1.80.0",
+    "pyodide": "314.0.6",
+    "typescript": "^5.9.3"
+  }
+}
