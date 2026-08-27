@@ -133,6 +133,19 @@ class AtticSpec:
                 )
 
 
+def collar_from_input(value: float | None) -> float | None:
+    """Read a collar height as an entry point receives it: **0 means none**.
+
+    The CLI has no choice about it — a required flag cannot also be omitted, so
+    `--collar 0` is how it says "no klieština". Extracted from `cli.py` because
+    it is a property of the input convention, not of one entry point.
+
+    `AtticSpec` itself stays honest: absence is `None`, never a height, which is
+    what this converts to. It is the only place the convention lives.
+    """
+    return None if value is None or value == 0 else value
+
+
 @dataclass(frozen=True, slots=True)
 class CostSpec:
     """One all-in rate for the whole roof, in EUR per m² of roof surface.

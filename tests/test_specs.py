@@ -2,7 +2,7 @@
 
 import pytest
 
-from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
+from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec, collar_from_input
 
 
 @pytest.mark.parametrize("pitch_deg", [0.0, 90.0, -5.0])
@@ -76,3 +76,16 @@ def test_a_collar_at_or_below_the_knee_top_is_rejected(collar: float) -> None:
             knee_height=0.5,
             collar_above_wall_top=collar,
         )
+
+
+def test_collar_from_input_reads_zero_and_absence_as_the_same_thing() -> None:
+    """The one place the "0 means no klieština" convention lives.
+
+    Both entry points route through it, so a change here changes both. Any other
+    number passes straight to `AtticSpec`, which is what still rejects a collar
+    at or below the wall top — this function does not validate.
+    """
+    assert collar_from_input(0) is None
+    assert collar_from_input(None) is None
+    assert collar_from_input(2.4) == 2.4
+    assert collar_from_input(-1) == -1
