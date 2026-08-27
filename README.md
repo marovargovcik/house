@@ -23,10 +23,10 @@ Everything runs through `uv run`; there is no virtualenv to activate.
 
 **Every input is required — there are no defaults.** A default would let a figure
 reach a report without anyone looking at it, which is the one thing this tool
-must not do. `uv run house --help` lists them. The design as it currently stands:
+must not do. `uv run cli --help` lists them. The design as it currently stands:
 
 ```bash
-uv run house --html roof.html \
+uv run cli --html roof.html \
   --widths 9 10 11 --length 25 --pitches 25 30 35 40 45 \
   --overhang-eave 0.6 --overhang-gable 0.4 \
   --h-min 1.9 --roof-buildup 0.30 --floor-buildup 0.20 --knee 0 --collar 0 \

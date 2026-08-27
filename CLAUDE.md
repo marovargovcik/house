@@ -19,7 +19,7 @@ Everything runs through `uv run` — never activate the virtualenv manually.
 | Task | Command |
 |------|---------|
 | Setup (fresh clone) | `uv sync && git config core.hooksPath .githooks` |
-| Run | `uv run house` — every input is a required flag; README.md has the current design's invocation |
+| Run | `uv run cli` — every input is a required flag; README.md has the current design's invocation |
 | Tests | `uv run pytest` — one module: `uv run pytest tests/test_roof.py` |
 | Format | `uv run ruff format .` |
 | Lint | `uv run ruff check --fix .` |
