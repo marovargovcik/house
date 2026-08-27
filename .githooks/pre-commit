@@ -12,6 +12,16 @@ uv run mypy .                || failed=1
 # pass the gate that the docs call "all gates".
 uv run pytest -q             || failed=1
 
+# The browser page gets the same treatment as the Python: lint, format check,
+# and types. Skipped loudly, not silently, when node_modules is absent — it is
+# the one gate needing an install that `uv sync` does not do.
+if [[ -d web/node_modules ]]; then
+  npm --prefix web run --silent check \
+    || { echo "  -> fix: npm --prefix web run format, then re-check"; failed=1; }
+else
+  echo "note: skipping web checks (run: npm --prefix web install)"
+fi
+
 if [[ $failed -ne 0 ]]; then
   echo
   echo "commit aborted (bypass with: git commit --no-verify)" >&2
