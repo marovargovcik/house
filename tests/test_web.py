@@ -1,4 +1,4 @@
-"""`house.web` — composition, not new arithmetic.
+"""`house.web` — the browser entry point. Composition, not new arithmetic.
 
 Every number it returns is already pinned by `test_sweep`, `test_csv` and
 `test_to_html`; what is untested elsewhere is the wiring. So this checks the two
@@ -11,8 +11,14 @@ tests run on, which is the whole reason the browser build needs no shims.
 """
 
 import json
+import re
+from pathlib import Path
+
+import pytest
 
 from house import web
+
+ROOT = Path(__file__).resolve().parent.parent
 from house.core import sweep
 from house.core.specs import AtticSpec, CostSpec
 from house.interpreters import to_csv, to_text
@@ -93,3 +99,109 @@ def test_a_cross_spec_problem_is_reported_the_same_way() -> None:
 
     assert "does not fit the roof" in result["problems"][0]
     assert (result["table"], result["csv"], result["html"]) == ("", "", "")
+
+
+def test_the_page_lists_every_module_it_has_to_load() -> None:
+    """`web/scripts/runtime.js` names the modules to fetch; nothing else keeps that honest.
+
+    The page copies `src/house/` into Pyodide by hand, from a list, because a
+    static server offers no way to enumerate a directory. So a module added to
+    the core is invisible to the browser until someone edits that list — and the
+    failure is an `ImportError` on page load, far from the change that caused it.
+    TypeScript cannot see this: the paths are strings, and the files are Python.
+
+    `cli.py` is the one deliberate omission — the browser has a form instead.
+    """
+    source = (ROOT / "web" / "scripts" / "runtime.js").read_text()
+    block = re.search(r"const MODULES = \[(.*?)\];", source, re.DOTALL)
+    assert block is not None, (
+        "web/scripts/runtime.js no longer declares MODULES as a literal"
+    )
+    listed = set(re.findall(r'"([^"]+)"', block.group(1)))
+
+    package = ROOT / "src" / "house"
+    on_disk = {
+        str(path.relative_to(ROOT / "src")) for path in package.rglob("*.py")
+    } - {"house/cli.py"}
+
+    assert listed == on_disk, (
+        f"web/scripts/runtime.js MODULES is out of step with src/house/: "
+        f"missing {sorted(on_disk - listed)}, stale {sorted(listed - on_disk)}"
+    )
+
+
+def test_the_import_map_points_at_a_file_that_exists() -> None:
+    """`tsc` resolves `"pyodide"` from node_modules; the browser cannot.
+
+    The module says `import { loadPyodide } from "pyodide"`, and a bare specifier
+    means nothing to a browser — `web/index.html` carries an import map that
+    turns it into a path. Only that path can 404, only in the browser, and only
+    at page load, so the type checker will never notice it going stale.
+
+    Skipped when `web/node_modules` is absent: it is gitignored, and `uv sync`
+    does not create it.
+    """
+    web = ROOT / "web"
+    if not (web / "node_modules").exists():
+        pytest.skip("web/node_modules is absent — run `npm --prefix web install`")
+
+    page = (web / "index.html").read_text()
+    block = re.search(r'<script type="importmap">(.*?)</script>', page, re.DOTALL)
+    assert block is not None, "web/index.html no longer carries an import map"
+    imports = json.loads(block.group(1))["imports"]
+
+    for specifier, target in imports.items():
+        resolved = (web / target).resolve()
+        assert resolved.is_file(), (
+            f"import map sends {specifier!r} to {target!r}, which does not exist"
+        )
+
+
+def test_every_export_is_imported_somewhere() -> None:
+    """Nothing under `web/` is exported that no other module asks for.
+
+    `tsc` catches the opposite direction — `noUnusedLocals` rejects an import
+    nobody uses — but an *export* nobody imports is invisible to it: it is a
+    legitimate public API as far as the type checker is concerned. In a page with
+    no consumers outside itself, it is dead weight, and it quietly widens a
+    module's surface past what it actually promises.
+    """
+    scripts = sorted(
+        path
+        for path in (ROOT / "web").rglob("*.js")
+        if "node_modules" not in path.parts
+    )
+    assert scripts, "no browser modules found"
+
+    exported = {
+        (path, name.strip())
+        for path in scripts
+        for block in re.findall(r"^export \{([^}]*)\};", path.read_text(), re.MULTILINE)
+        for name in block.split(",")
+        if name.strip()
+    }
+    # Without this the test passes by finding nothing at all, which is exactly
+    # what happened when the modules moved their exports to the end of the file.
+    assert exported, "no exports found — has the export style changed?"
+    imported = set()
+    for path in scripts:
+        # Collapsed, because a wrapped import spans lines once oxfmt has been at it.
+        flat = " ".join(path.read_text().split())
+        for pattern in (
+            r'import \{([^}]*)\} from "([^"]+)"',
+            r'@import \{([^}]*)\} from "([^"]+)"',
+        ):
+            for block, specifier in re.findall(pattern, flat):
+                if not specifier.startswith("."):
+                    continue
+                target = (path.parent / specifier).resolve()
+                imported |= {
+                    (target, name.strip()) for name in block.split(",") if name.strip()
+                }
+
+    unused = sorted(
+        f"{path.relative_to(ROOT).as_posix()}: {name}"
+        for path, name in exported
+        if (path.resolve(), name) not in imported
+    )
+    assert not unused, f"exported but never imported — drop the `export`: {unused}"
