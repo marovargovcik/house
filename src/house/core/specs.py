@@ -136,9 +136,11 @@ class AtticSpec:
 def collar_from_input(value: float | None) -> float | None:
     """Read a collar height as an entry point receives it: **0 means none**.
 
-    The CLI has no choice about it — a required flag cannot also be omitted, so
-    `--collar 0` is how it says "no klieština". Extracted from `cli.py` because
-    it is a property of the input convention, not of one entry point.
+    Both entry points need this and neither owns it. The CLI has no choice — a
+    required flag cannot also be omitted, so `--collar 0` is how it says "no
+    klieština". The web form could express absence as an empty field, and does,
+    but it accepts 0 for the same thing so that a number that works on the
+    command line does not become an error in the browser.
 
     `AtticSpec` itself stays honest: absence is `None`, never a height, which is
     what this converts to. It is the only place the convention lives.

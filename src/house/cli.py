@@ -10,10 +10,11 @@ So every figure in a report is one somebody typed on the day.
 
 There are no exceptions. `--collar` is required too, with 0 meaning "no collar
 tie" — the one place a value stands in for absence, because a flag cannot be both
-required and omitted. `core.specs.collar_from_input` does the translation, so the
-rule lives in one place rather than inside an entry point. `AtticSpec` keeps
-`float | None`, since absence genuinely is not a height, and it still rejects a
-collar sitting at or below the wall top.
+required and omitted. `core.specs.collar_from_input` does the translation — the
+browser build accepts 0 for the same thing, so the rule lives in one place rather
+than in each entry point. `AtticSpec` keeps `float | None`, since absence
+genuinely is not a height, and it still rejects a collar sitting at or below the
+wall top.
 
 `README.md` holds the invocation for the design as it currently stands, and the
 reasoning behind each of those numbers is in `docs/spec.md` and
