@@ -1,8 +1,14 @@
-"""The sweep, for a caller that has nowhere to write: JSON in, strings out.
+"""The browser build: the sweep the page runs, and the server that hands it over.
 
-`report()` is **pure**: JSON in, rendered strings out, no IO. The browser has
-nowhere to write anyway, which means it is testable on CPython exactly as the
-core is (`tests/test_web.py`).
+Split the way every interpreter here is split — `render_html` / `write_html`,
+`render_csv` / `write_csv` — with the pure half first and the effect at the very
+edge:
+
+- `report()` is **pure**: JSON in, rendered strings out, no IO. This is what runs
+  *inside* the browser, where there is nowhere to write anyway, and it is
+  testable on CPython exactly as the core is (`tests/test_web.py`).
+- `main()` is the effect: `uv run web` serves the page and opens it. It never
+  runs in the browser — Pyodide imports this module and calls `report`.
 
 The counterpart to `house.cli`, and deliberately the *only* Python the browser
 build adds. Pyodide is CPython 3.14 — the same interpreter `uv run cli` uses — so
@@ -18,6 +24,10 @@ Where it differs from `cli.py`:
 """
 
 import json
+import webbrowser
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 from house.core import sweep, validate
 from house.core.specs import AtticSpec, CostSpec, collar_from_input
@@ -77,3 +87,32 @@ def report(payload: str) -> str:
 
 def _refused(problems: list[str]) -> str:
     return json.dumps({"problems": problems, "table": "", "csv": "", "html": ""})
+
+
+PORT = 8000
+"""Fixed rather than picked: a stable URL survives a restart, and the one way it
+can fail — something else already on 8000 — says so plainly."""
+
+
+def main() -> None:
+    """Serve the repo root at `/web/` and open it. `uv run web`.
+
+    The **repo root**, not `web/`: the page fetches `../src/` so that editing a
+    core module and reloading is the whole loop, which means the served tree has
+    to contain both. Serving `web/` alone 404s every module.
+
+    Threaded because the page requests all fifteen modules at once, and a
+    single-threaded handler answers them one connection at a time.
+    """
+    root = Path(__file__).resolve().parent.parent.parent
+    url = f"http://127.0.0.1:{PORT}/web/"
+    handler = partial(SimpleHTTPRequestHandler, directory=str(root))
+    with ThreadingHTTPServer(("127.0.0.1", PORT), handler) as server:
+        # Flushed: stdout is block-buffered when redirected, and this line is
+        # how you get in if the browser does not open on its own.
+        print(f"serving {root} at {url}  (ctrl-c to stop)", flush=True)
+        webbrowser.open(url)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print()
