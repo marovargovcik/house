@@ -1,7 +1,7 @@
 [project]
 name = "roof"
 version = "0.1.0"
-description = "Roof, attic, and excavation estimates for a self-build house on a sloped plot"
+description = "Roof and attic estimates for a self-build house on a sloped plot"
 readme = "README.md"
 authors = [
     { name = "Marek Vargovčík", email = "mvk@famly.co" }

@@ -1,10 +1,11 @@
-# house
+# roof
 
-A scoping tool for a self-build house on a sloped plot. It estimates:
+A scoping tool for the roof of a self-build house on a sloped plot. It estimates:
 
 - **roof** — surface area and material/timber cost against pitch and footprint
 - **attic** — usable upstairs floor area against pitch and width
-- **excavation** — cut volume and maximum cut depth against pad height
+
+Excavation is its own project — see the [repo README](../README.md).
 
 It is not an engineering-grade calculator. The goal is **trustworthy,
 hand-verifiable numbers** you can sweep across design variables — every figure it
@@ -163,7 +164,8 @@ file and rewrite `pyproject.toml`, and no gate checks either.
 
 ## Documentation
 
-- [`docs/spec.md`](./docs/spec.md) — formulas, terrain data, coordinate frame, caveats
+- [`docs/spec.md`](./docs/spec.md) — formulas, terminology, caveats
 - [`docs/decisions.md`](./docs/decisions.md) — dated record of settled decisions
-- [`CLAUDE.md`](./CLAUDE.md) — architecture invariants and working conventions
-- [`REVIEW.md`](./REVIEW.md) — code review guidelines
+- [`CLAUDE.md`](./CLAUDE.md) — commands and structure; the repo's
+  [`CLAUDE.md`](../CLAUDE.md) has the architecture invariants and conventions
+- [`REVIEW.md`](../REVIEW.md) — code review guidelines

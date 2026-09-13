@@ -1,37 +1,72 @@
 # Project Guidelines
 
-## What this project is
+## What this repo is
 
-A scoping/decision-support tool that estimates roof material cost, usable attic
-area, and excavation volume for a self-build house on a sloped plot. It is not an
-engineering-grade calculator — the goal is **trustworthy, hand-verifiable numbers**
-you can sweep across design variables.
+Tools and models for a self-build house on a sloped plot near Trenčín, kept in
+one repo as **isolated projects**. None of them is engineering-grade — the goal
+is **trustworthy, hand-verifiable numbers** and an honest picture of how the
+house sits in the terrain.
 
-Full formulas, terrain data, and rationale live in [`docs/spec.md`](./docs/spec.md).
-**Read it before touching `roof.py`, `attic.py`, `terrain.py`, or `excavation.py`.**
+| Project | What it is | Status |
+|---|---|---|
+| [`roof/`](./roof) | Roof cost and usable attic area, swept across width and pitch. Python, plus a Pyodide browser page | working |
+| `terrain/` | Survey points → plot frame → triangle mesh → `Z_ground(x, y)`, contours, profiles. Python | planned |
+| `excavation/` | Cut volume and max cut depth against pad height, on top of `terrain`. Python | planned |
+| `scene/` | Terrain and house massing drawn: SVG long sections and site plan, PyVista 3D views later. Python | planned |
+| `model/` | Sweet Home 3D interior model | planned |
 
----
+Each project has its own `CLAUDE.md` with its commands and structure — **read it
+before working in that project.** Facts about the plot (survey, coordinate frame,
+placement) live in [`docs/site.md`](./docs/site.md); decisions that span projects
+in [`docs/decisions.md`](./docs/decisions.md).
+
+> [!NOTE]
+> A planned project has no folder until work on it starts; its spec lives in
+> `docs/site.md` meanwhile. A missing folder is not a bug to report.
+
+## Repo layout and isolation
+
+```text
+CLAUDE.md  README.md  REVIEW.md  house.code-workspace
+.githooks/pre-commit   # runs <project>/check for every project a commit touches
+.gitattributes         # Git LFS for binary sources (.sh3d, .dwg, .pdf)
+docs/                  # site.md (plot, frame, survey), decisions.md (cross-project)
+data/survey/           # the surveyor's files — read-only source data
+roof/                  # one project = one folder
+```
+
+- **A project is self-contained:** its own `pyproject.toml`, `uv.lock`,
+  `.python-version`, `.venv`, `check`, `CLAUDE.md`, `README.md`, `docs/` and
+  `.vscode/`. There is no uv workspace and no Python configuration at the root.
+- **A Python project uses another through a path dependency**, never a workspace:
+
+  ```toml
+  [tool.uv.sources]
+  terrain = { path = "../terrain", editable = true }
+  ```
+
+- **Projects share data and documented facts, not environments.** Survey files
+  live once in `data/survey/`; the plot frame is defined once in `docs/site.md`.
+- **Every project has an executable `check`** that runs all of its gates. The
+  root hook finds it by that name.
 
 ## Commands
 
-Everything runs through `uv run` — never activate the virtualenv manually.
-
 | Task | Command |
 |------|---------|
-| Setup (fresh clone) | `uv sync && git config core.hooksPath .githooks` |
-| Run | `uv run cli` — every input is a required flag; README.md has the current design's invocation |
-| Run in a browser | `uv run web` — serves the repo root and opens the page; needs `npm --prefix web install` |
-| Tests | `uv run pytest` — one module: `uv run pytest tests/test_roof.py` |
-| Format | `uv run ruff format .` |
-| Lint | `uv run ruff check --fix .` |
-| Types | `uv run mypy .` |
-| Browser page gates | `npm --prefix web run check` — oxlint, oxfmt, tsc |
-| Format the browser page | `npm --prefix web run format` — HTML, CSS, JS in one |
-| All gates, as pre-commit runs them | `.githooks/pre-commit` |
+| Setup (fresh clone) | `git config core.hooksPath .githooks && git lfs install`, then each project's own setup |
+| A project's command from the repo root | `uv run --directory roof pytest` — the project's `CLAUDE.md` lists them |
+| Gates for the projects a commit touches | `.githooks/pre-commit` |
+| Gates for every project | `.githooks/pre-commit --all` |
 
 > [!WARNING]
 > `git config core.hooksPath .githooks` is **per clone**. Without it the
 > pre-commit hook silently never runs.
+
+> [!WARNING]
+> Binary sources (`*.sh3d`, `*.dwg`, `*.pdf`) go through Git LFS
+> (`.gitattributes`). Without `git lfs install` they are committed as ordinary
+> blobs, and only a history rewrite takes them out again.
 
 ---
 
@@ -74,17 +109,17 @@ Everything runs through `uv run` — never activate the virtualenv manually.
 
 ## Architecture — the load-bearing invariants
 
-These are the rules that this project's whole design depends on. They are not
-enforced by the language (Python has no `F[_]` to make side effects visible in
-types), so they must be upheld **by discipline** — which means they matter more
-here, not less.
+These are the rules every Python project here depends on. They are not enforced
+by the language (Python has no `F[_]` to make side effects visible in types), so
+they must be upheld **by discipline** — which means they matter more here, not
+less.
 
 - **`core/` is pure.** Modules in `core/` contain only pure functions: same
   inputs → same outputs, no IO, no file/network/print, no global state, no
   mutation of arguments. This is what makes the numbers testable in isolation and
   trustworthy. A calculation that reaches for IO is a bug in the design.
 - **IO and rendering live in `interpreters/` and entry points only.** JSON export,
-  spreadsheet export, a future 3D viewer — these *consume* what the core produces.
+  spreadsheet export, a 3D view — these *consume* what the core produces.
   `core/` never imports an interpreter, a plotting library, or anything that does IO.
 - **An interpreter splits building from writing.** `render_html` / `write_html`,
   `render_csv` / `write_csv`: the string is built by a pure function and one thin
@@ -98,9 +133,8 @@ here, not less.
   decides a run stops). Past that boundary, inputs are trusted — don't add a
   defensive clamp downstream for a shape validation already rules out.
 - **All terrain access goes through `Z_ground(x, y)`.** No module inlines terrain
-  assumptions. The `y` parameter stays in the signature even while today's model
-  ignores it — this is what makes swapping in survey-point terrain a body-only
-  change. See `docs/spec.md`.
+  assumptions — excavation, the scene and anything else ask `terrain` for a
+  height. See `docs/site.md`.
 - **Calculations are named functions, never buried in render/UI callbacks.** So
   they can be unit-tested independently of any visualization. This extends to
   drawings: a drawing's *coordinates* are numbers, so they live in `core/views.py`
@@ -109,51 +143,6 @@ here, not less.
   calculation is not done until a test fixes its value against a hand-computed
   reference. Prefer a few high-value checks (flat plot → 0 excavation, 45° roof →
   footprint × √2) over many shallow ones.
-
-## Project structure
-
-> [!NOTE]
-> Target layout. Only `src/roof/__init__.py` exists today — create modules as
-> the work reaches them; a missing file here is not a bug to report.
-
-```text
-src/roof/
-  core/            # pure modules, depend only on specs
-    specs.py       # frozen dataclasses: HouseSpec, TerrainSpec, RoofSpec, ...
-    roof.py        # roof surface area, material/timber cost
-    attic.py       # usable upstairs area vs. pitch/width
-    terrain.py     # Z_ground(x, y) — the terrain seam
-    excavation.py  # excavation volume + max cut depth
-    views.py       # section/plan coordinates for drawings — numbers, not pixels
-    validate.py    # cross-spec checks — the ones no single spec can make
-  interpreters/    # consume core output; IO lives here
-    to_json.py
-    to_csv.py      # sweep rows -> CSV
-    to_text.py     # sweep rows -> fixed-width table for a terminal
-    to_svg.py      # views -> SVG (string building, no IO)
-    to_html.py     # sweep + drawings -> one self-contained page
-    sk.py          # Slovak number formatting for the report
-    to_scene.py    # later — geometry → JSON for a JS/Three.js viewer
-  cli.py           # entry point: flags -> core -> stdout and files
-  web.py           # entry point: JSON -> core -> strings. Pure; the browser's.
-web/
-  index.html       # the browser UI's markup; fetches src/ live, no build step
-  style.css        # its styling (the report brings its own)
-  scripts/
-    app.js         # entry point: boot, then let the form drive it
-    dom.js         # the page's elements, looked up once and class-checked
-    form.js        # reading the form into a payload, and refusing a bad one
-    view.js        # display state; the only thing that writes to the panes
-    runtime.js     # Pyodide, and the module list it copies into it
-  package.json     # pyodide itself, plus oxlint, oxfmt, typescript
-tests/             # hand-checked cases pinning every output; mirrors src/roof/
-docs/
-  spec.md          # formulas, terrain data, rationale, caveats
-  decisions.md     # dated record of settled decisions — don't re-litigate these
-```
-
-The build is a `src/` layout (`uv_build`), so imports are absolute from the
-package root: `from roof.core.roof import surface_area`.
 
 ---
 
@@ -197,18 +186,14 @@ Few absolute rules, but watch for these pitfalls:
 
 ## Python conventions
 
-**Tech stack**: Python 3.14+ (pinned in `.python-version`) and **nothing else at
-runtime** — Module 1 is `math` and `dataclasses` end to end. `numpy` (grid math)
-and `scipy` (survey-point interpolation) come back with Module 2's excavation
-work; add them with `uv add` when a module actually imports them, not before.
-
-> [!NOTE]
-> The empty `dependencies` list is deliberate, not an oversight. It is what lets
-> the whole pipeline run on a bare CPython — including a browser runtime — so
-> don't reach for a third-party package where the standard library will do.
+**Tech stack**: Python 3.14+, pinned in each project's `.python-version`. Runtime
+dependencies are per project and kept minimal — add one with `uv add` when a
+module actually imports it, not before. `roof` has none at all, on purpose (see
+`roof/CLAUDE.md`).
 
 **Toolchain** — the 2026-consolidated stack, mostly one company (Astral). All
-tool configuration belongs in `pyproject.toml`, never in per-tool dotfiles:
+tool configuration belongs in the project's `pyproject.toml`, never in per-tool
+dotfiles:
 
 - **`uv`** — Python version, virtualenv, dependency resolution, locking, and command
   running, all in one (replaces pip/venv/poetry/pyenv).
@@ -220,7 +205,7 @@ tool configuration belongs in `pyproject.toml`, never in per-tool dotfiles:
   much faster and worth revisiting once it settles, but `mypy` is the source of
   truth for now. Configured `strict = true` in `pyproject.toml`.
 - **`pylance`** — a *second* type checker, running in the editor only. See
-  [Two type checkers](#two-type-checkers-mypy-wins) below before acting on
+  [Two type checkers](#two-type-checkers--mypy-wins) below before acting on
   anything it reports.
 - **`pytest`** — tests.
 
@@ -231,7 +216,7 @@ Two type checkers see this code, and they are set up so they rarely disagree:
 | Checker | Where it runs | Configured in | Authority |
 |---|---|---|---|
 | `mypy` (`strict = true`) | CLI, **editor on save**, pre-commit hook, CI | `pyproject.toml` | **source of truth** |
-| Pylance / Pyright (`basic`) | VS Code editor only | `.vscode/settings.json` | advisory |
+| Pylance / Pyright (`basic`) | VS Code editor only | the project's `.vscode/settings.json` | advisory |
 
 The editor runs the **project's own mypy** via `ms-python.mypy-type-checker` with
 `importStrategy: fromEnvironment` — the same binary and config the commit hook
@@ -259,6 +244,8 @@ names and bad attribute access without arguing with mypy about inference.
 
 ### uv workflow
 
+- Run everything from the project's folder, or with `uv run --directory <project>`
+  from the repo root. Each project has its own `.venv`.
 - Add deps with `uv add <pkg>`; dev deps with `uv add --dev pytest ruff mypy`.
 - **Never activate a virtualenv manually** — run everything through `uv run`
   (`uv run pytest`, `uv run ruff check`, `uv run mypy .`) so the right environment
@@ -280,41 +267,40 @@ names and bad attribute access without arguing with mypy about inference.
   costs nothing.
 - Define related constructors/factories as `@classmethod` or module-level functions
   on/near the type, not scattered.
-- Prefer standard-library idioms over hand-rolled loops, and `numpy` once
-  Module 2 brings it back for grid work — but keep the calculation legible and
-  auditable (this is a trust-the-numbers project).
+- Prefer standard-library idioms over hand-rolled loops, and `numpy` where a
+  project uses it for grid work — but keep the calculation legible and auditable
+  (this is a trust-the-numbers project).
 - Imports at the top of the file; no inline imports except to break a genuine cycle
   (and prefer restructuring over that).
 - Absolute imports within the package.
 
 **Where enforcement actually happens:**
 
-- **On save** — `.vscode/settings.json` runs `ruff format` plus ruff's autofix and
-  import sorting via the `charliermarsh.ruff` extension. It uses the project's
-  pinned ruff (`ruff.importStrategy: fromEnvironment`), not the extension's bundled
-  copy, so the editor and CI can't drift apart. The same rule covers the browser
-  page: the `oxc.oxc-vscode` extension formats HTML, CSS, JS/TS and JSON with
-  `oxfmt` and applies `source.fixAll.oxc`, auto-detecting the pinned binaries in
-  `web/node_modules`. Config discovery is nested, so `web/.oxfmtrc.json` and
-  `web/.oxlintrc.json` apply even though the workspace root is one level up.
+- **On save** — the project's `.vscode/settings.json` runs `ruff format` plus
+  ruff's autofix and import sorting via the `charliermarsh.ruff` extension. It
+  uses the project's pinned ruff (`ruff.importStrategy: fromEnvironment`), not the
+  extension's bundled copy, so the editor and CI can't drift apart. Open
+  `house.code-workspace`, so each project is its own workspace folder and finds
+  its own `.venv`.
 - **As you type** — Pylance type-checks in the editor. It is **advisory only**;
-  see [Two type checkers](#two-type-checkers-mypy-wins).
-- **On commit** — `.githooks/pre-commit` runs `ruff format --check`, `ruff check`,
-  `mypy`, and `pytest` over the whole tree and aborts the commit on any failure. It checks
-  the working tree, not just staged files, so an unrelated dirty file will block
-  the commit. Bypass deliberately with `git commit --no-verify`.
+  see [Two type checkers](#two-type-checkers--mypy-wins).
+- **On commit** — `.githooks/pre-commit` runs `<project>/check` for every project
+  the commit touches; for Python that is `ruff format --check`, `ruff check`,
+  `mypy`, and `pytest`, aborting the commit on any failure. A check covers the
+  project's whole working tree, not just staged files, so an unrelated dirty file
+  in that project will block the commit. Bypass deliberately with
+  `git commit --no-verify`.
 
 ## Units, vocabulary & coordinate frame
 
 - **Domain terminology, including Slovak equivalents for roof/attic terms, is in
-  [`docs/spec.md`](./docs/spec.md)** — use the Slovak terms in any output intended
-  for the projektant or the builders.
+  [`roof/docs/spec.md`](./roof/docs/spec.md)** — use the Slovak terms in any
+  output intended for the projektant or the builders.
 - Units are **metres, degrees, and EUR** throughout. Convert at boundaries only;
   the core speaks these units and nothing else.
-- The plot has **one fixed, documented coordinate frame** (origin and axis
-  directions in `docs/spec.md`). Survey points arriving in another frame are
-  translated/rotated **once at ingestion**; every core function speaks the plot
-  frame.
+- The plot has **one fixed, documented coordinate frame**, defined in
+  [`docs/site.md`](./docs/site.md). Survey points arrive in S-JTSK and are
+  converted **once at ingestion**; every core function speaks the plot frame.
 
 ---
 
@@ -333,8 +319,8 @@ names and bad attribute access without arguing with mypy about inference.
 - **For bug fixes**: write a test that reproduces the bug before fixing it.
 - Prefer **hard-coded values** for any dimensions/inputs in tests over generated or
   "current" values, so tests are deterministic.
-- Place tests in `tests/`, mirroring the package structure.
-- Run tests with `uv run pytest`. Scope to a module with
+- Place tests in the project's `tests/`, mirroring its package structure.
+- Run tests with `uv run pytest` in the project. Scope to a module with
   `uv run pytest tests/test_roof.py`.
 
 ---
@@ -353,8 +339,9 @@ names and bad attribute access without arguing with mypy about inference.
 - Explain *why*, not *what*. Prefer clear, obvious code over a comment.
 - Add comments about non-obvious assumptions or side-effects.
 - **A deliberate imprecision is not a bug — don't "fix" it.** Several modelling
-  choices in this project are intentionally approximate for budgeting. When you
-  spot one, leave it and check `docs/decisions.md` before "correcting" it.
+  choices in this repo are intentionally approximate for budgeting. When you
+  spot one, leave it and check the decision logs — the repo's
+  `docs/decisions.md` and the project's own — before "correcting" it.
 
 ## Talking to me
 
@@ -373,6 +360,9 @@ Short. Verbosity is a bug, not thoroughness.
 
 - **One-line subject**, imperative, explains the *why* when it isn't obvious.
   Add a body only when the why genuinely needs a sentence or two.
+- **Prefix the subject with the project** when the commit stays inside one:
+  `roof: Cap the clear ridge height at the collar tie`. A change spanning projects
+  or touching only the root goes unprefixed.
 - Prefer a **commit-by-commit approach**: break changes into smaller, logical
   commits; each commit is one focused change, easy to review and revert.
 - **PR descriptions stay short** — what changed and why, a few lines. No file
@@ -380,7 +370,8 @@ Short. Verbosity is a bug, not thoroughness.
 
 ## Documentation
 
-Docs live in `./docs`, kebab-case filenames. Style:
+Docs live in `docs/` — the repo's for what spans projects, a project's own for
+the rest — with kebab-case filenames. Style:
 
 - ATX-style headings (`#`, `##`). Specify the language on every code block.
 - `-` for unordered lists. Standard Markdown tables.

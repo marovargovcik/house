@@ -8,46 +8,16 @@ icon: 🧭
 Dated record of settled decisions and the reasoning behind them. **Do not
 re-litigate or "fix" these without being asked** — several are deliberate
 approximations, not oversights. When a modelling choice looks imprecise, check
-here first.
+here first. Decisions that span projects — language, functional core, terrain,
+excavation, placement — are in the [repo's decision log](../../docs/decisions.md).
 
 ## 2026-08
-
-- **Language: Python, not JavaScript or Scala.** The deliverable that matters is a
-  pure, testable, auditable numeric *core*, not a 3D canvas. Python's ecosystem
-  (numpy, pandas, pytest, scipy) fits auditing and parameter sweeps best. A 3D
-  viewer, if built, is a *separate* JS artifact reading the core's JSON output —
-  not part of the core.
-
-- **Functional core / imperative shell.** `core/` is pure; IO and rendering are
-  interpreters at the edges. Purity is upheld by discipline (Python won't enforce
-  it), which is why it's stated as a load-bearing invariant, not a preference.
-
-- **Single terrain seam `Z_ground(x, y)`.** All terrain math depends only on this
-  function. Signature keeps `y` even though today's model ignores it, so
-  swapping in survey-point terrain later is a body-only change. **Do not** remove
-  the unused `y` parameter.
 
 - **No knee wall — but keep the parameter.** Current design has no knee wall.
   The `attic` calculation still takes knee-wall height as a parameter, so "what
   would a 0.5 m knee wall buy?" is answered instantly without restructuring.
   **Do not** delete the parameter as dead code. *Superseded in part:* it no
   longer defaults to 0 — every caller states it, per the no-defaults rule below.
-
-- **Single `Z_pad` excavation model (deliberate over-estimate).** A true split-level
-  (garage floor vs. living floor half a story up) has two pad elevations. We model
-  one pad at garage-floor level, which slightly **over-estimates** excavation.
-  That is the safe direction for budgeting. A second pad "step" can be added later
-  as a second clamp region. **This is intentional — do not "correct" it to a
-  two-pad model unless asked.**
-
-- **Terrain today = piecewise-linear along length, constant across width.** Real
-  terrain has cross-slope; today's model flattens it because we only have a
-  longitudinal profile. Today's excavation number is a **scoping estimate**, not
-  final. It will shift when (x, y, z) survey points arrive. Expected and accepted.
-
-- **House placement fixed:** "I"-shape, 10–11 m wide, long axis along the slope,
-  front wall at x = 18 m (top of the steep 3 m step), garage cutting into the
-  escarpment. See `spec.md` for the plot profile and full reasoning.
 
 - **Overhang measured as horizontal projection (both eave and gable).** Roofers
   quote horizontal projections, and it keeps the formula hand-checkable. The
