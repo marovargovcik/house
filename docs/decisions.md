@@ -50,8 +50,11 @@ oversights.
   which stay the source of truth. Its OBJ export can later be placed on the
   terrain in `scene/`.
 
-- **Binary sources go through Git LFS:** `*.sh3d`, `*.dwg`, `*.pdf`. The survey's
-  point list stays plain text, so it diffs.
+- **Sweet Home 3D models go through Git LFS; the survey does not.** `*.sh3d` is
+  binary and grows with every save. The survey drawing (`.dwg`, `.pdf`) is binary
+  too, but ~150 KB and never changes, so it is committed as an ordinary file.
+  Nothing reads it: `terrain.txt` holds every coordinate, and the drawing is the
+  reference for what each point is.
 
 - **No export for the architects for now.** They use SketchUp; if one is needed,
   DXF with contours and survey points in the plot frame is the candidate.
@@ -85,7 +88,7 @@ oversights.
   terrain has cross-slope; today's model flattens it because we only have a
   longitudinal profile. Today's excavation number is a **scoping estimate**, not
   final. It will shift when (x, y, z) survey points arrive. Expected and accepted.
-  *Superseded:* the survey has arrived (`data/survey/`), and `Z_ground` is a
+  *Superseded:* the survey has arrived (`data/terrain.txt`), and `Z_ground` is a
   triangle mesh over it — see 2026-09.
 
 - **House placement fixed:** "I"-shape, 10–11 m wide, long axis along the slope,

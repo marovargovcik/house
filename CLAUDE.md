@@ -29,9 +29,9 @@ in [`docs/decisions.md`](./docs/decisions.md).
 ```text
 CLAUDE.md  README.md  REVIEW.md  house.code-workspace
 .githooks/pre-commit   # runs <project>/check for every project a commit touches
-.gitattributes         # Git LFS for binary sources (.sh3d, .dwg, .pdf)
+.gitattributes         # Git LFS for Sweet Home 3D models (.sh3d)
 docs/                  # site.md (plot, frame, survey), decisions.md (cross-project)
-data/survey/           # the surveyor's files — read-only source data
+data/                  # the survey: terrain.txt, .dwg, .pdf — read-only source data
 roof/                  # one project = one folder
 ```
 
@@ -46,7 +46,7 @@ roof/                  # one project = one folder
   ```
 
 - **Projects share data and documented facts, not environments.** Survey files
-  live once in `data/survey/`; the plot frame is defined once in `docs/site.md`.
+  live once in `data/`; the plot frame is defined once in `docs/site.md`.
 - **Every project has an executable `check`** that runs all of its gates. The
   root hook finds it by that name.
 
@@ -64,9 +64,9 @@ roof/                  # one project = one folder
 > pre-commit hook silently never runs.
 
 > [!WARNING]
-> Binary sources (`*.sh3d`, `*.dwg`, `*.pdf`) go through Git LFS
-> (`.gitattributes`). Without `git lfs install` they are committed as ordinary
-> blobs, and only a history rewrite takes them out again.
+> Sweet Home 3D models (`*.sh3d`) go through Git LFS (`.gitattributes`).
+> Without `git lfs install` they are committed as ordinary blobs, and only a
+> history rewrite takes them out again.
 
 ---
 

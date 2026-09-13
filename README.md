@@ -14,7 +14,7 @@ Planned: `terrain/`, `excavation/`, `scene/` and `model/` — see
 
 ```bash
 git config core.hooksPath .githooks   # pre-commit runs ./check of each touched project (per clone)
-git lfs install                       # .sh3d, .dwg and .pdf are stored in Git LFS
+git lfs install                       # Sweet Home 3D models (.sh3d) are stored in Git LFS
 ```
 
 Then follow the project's README. In VS Code, open `house.code-workspace`, so

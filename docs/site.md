@@ -10,9 +10,11 @@ the terrain and excavation projects until each gets its own folder.
 
 ## 1. Survey and coordinate frame
 
-- **Source:** the surveyor's measurement `TE_Kanova4a` of parcel 1561/1, in
-  [`data/survey/`](../data/survey): the drawing (`.dwg`, `.pdf`) and the point
-  list `TE_Kanova4a_zs.txt` — one point per line: number, Y, X, height.
+- **Source:** the surveyor's measurement of parcel 1561/1 (job `TE_Kanova4a`), in
+  [`data/`](../data). `terrain.txt` is the point list — one point per line:
+  number, Y, X, height. `terrain.dwg` / `terrain.pdf` is the drawing, and the only
+  record of what each point *is* (boundary corner, fence, tree, road); no code
+  reads it.
 - **Input frame:** S-JTSK (Y, X), heights Bpv in metres above sea level. Points
   with height 0.00 only mark a position and are not terrain.
 - **Plot frame:** every core function speaks this and nothing else. Survey
