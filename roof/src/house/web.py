@@ -95,9 +95,9 @@ can fail — something else already on 8000 — says so plainly."""
 
 
 def main() -> None:
-    """Serve the repo root at `/web/` and open it. `uv run web`.
+    """Serve the project root (`roof/`) at `/web/` and open it. `uv run web`.
 
-    The **repo root**, not `web/`: the page fetches `../src/` so that editing a
+    The **project root**, not `web/`: the page fetches `../src/` so that editing a
     core module and reloading is the whole loop, which means the served tree has
     to contain both. Serving `web/` alone 404s every module.
 

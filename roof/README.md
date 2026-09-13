@@ -14,11 +14,11 @@ produces is pinned by a test against a hand-computed reference.
 
 ```bash
 uv sync                                  # create the venv from uv.lock
-git config core.hooksPath .githooks      # enable the pre-commit gate (per clone)
 npm --prefix web install                 # the browser page: Pyodide + its checks
 ```
 
-Everything runs through `uv run`; there is no virtualenv to activate.
+Every command here runs from `roof/`. Everything runs through `uv run`; there is
+no virtualenv to activate.
 
 ### Running a sweep
 
@@ -71,7 +71,7 @@ terminal.
 uv run web
 ```
 
-That serves the repo root on port 8000 and opens the page. The **repo root**, not
+That serves `roof/` on port 8000 and opens the page. `roof/`, not
 `web/`: the page fetches `../src/`, so both have to be under what is served —
 which is also why any other static server (`python3 -m http.server 8000`,
 `npx serve .`) has to be started from here, not from `web/`. Source is fetched
@@ -100,7 +100,7 @@ uv run ruff check --fix .    # lint + import sort
 uv run mypy .                # types
 npm --prefix web run check   # the browser page: lint, format check, types
 npm --prefix web run format  # format web/ (JS, HTML, CSS, JSON)
-.githooks/pre-commit         # all gates, exactly as the commit hook runs them
+./check                      # all gates, exactly as the commit hook runs them
 ```
 
 The browser page has the same three gates the Python does, one tool each:
