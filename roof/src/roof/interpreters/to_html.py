@@ -16,10 +16,10 @@ from collections.abc import Iterable, Sequence
 from dataclasses import asdict
 from pathlib import Path
 
-from house.core import attic as attic_calc
-from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
-from house.core.sweep import SweepRow
-from house.interpreters import sk, to_svg
+from roof.core import attic as attic_calc
+from roof.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
+from roof.core.sweep import SweepRow
+from roof.interpreters import sk, to_svg
 
 _COLUMNS: tuple[tuple[str, str, str], ...] = (
     # sweep column, Slovak label, unit ("" for none)

@@ -11,11 +11,11 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from house.core import attic as attic_calc
-from house.core import views
-from house.core.specs import AtticSpec, HouseSpec, RoofSpec
-from house.core.views import Point, Rect
-from house.interpreters import sk
+from roof.core import attic as attic_calc
+from roof.core import views
+from roof.core.specs import AtticSpec, HouseSpec, RoofSpec
+from roof.core.views import Point, Rect
+from roof.interpreters import sk
 
 SCALE = 26.0
 """Pixels per metre, shared by every card — see the module docstring."""

@@ -77,12 +77,12 @@ which is also why any other static server (`python3 -m http.server 8000`,
 `npx serve .`) has to be started from here, not from `web/`. Source is fetched
 with `no-store`, so an edit shows up on reload whatever the server caches.
 
-It runs **`src/house/` itself**, unmodified, on CPython 3.14 compiled to
+It runs **`src/roof/` itself**, unmodified, on CPython 3.14 compiled to
 WebAssembly ([Pyodide](https://pyodide.org)), served from `web/node_modules` —
 so it needs `npm --prefix web install` first, and then no network at all.
 There is no build step and nothing generated: the page fetches the modules from
 `src/` as you serve them, so editing a core module and reloading is the whole
-loop. `src/house/web.py` is the entry point it calls — the pure counterpart to
+loop. `src/roof/web.py` is the entry point it calls — the pure counterpart to
 `cli.py`.
 
 > [!NOTE]

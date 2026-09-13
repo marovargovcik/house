@@ -9,8 +9,8 @@ import math
 
 import pytest
 
-from house.core import attic
-from house.core.specs import AtticSpec, HouseSpec, RoofSpec
+from roof.core import attic
+from roof.core.specs import AtticSpec, HouseSpec, RoofSpec
 
 HOUSE = HouseSpec(width=9.0, length=10.0)
 # Overhangs do not enter any of this — headroom is measured inside the walls —

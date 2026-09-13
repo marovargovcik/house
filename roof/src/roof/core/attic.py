@@ -16,8 +16,8 @@ over-states the usable strip by roughly the sum of the first two, magnified by
 import math
 from dataclasses import dataclass
 
-from house.core import roof as roof_calc
-from house.core.specs import AtticSpec, HouseSpec, RoofSpec
+from roof.core import roof as roof_calc
+from roof.core.specs import AtticSpec, HouseSpec, RoofSpec
 
 
 @dataclass(frozen=True, slots=True)

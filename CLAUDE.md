@@ -113,11 +113,11 @@ here, not less.
 ## Project structure
 
 > [!NOTE]
-> Target layout. Only `src/house/__init__.py` exists today — create modules as
+> Target layout. Only `src/roof/__init__.py` exists today — create modules as
 > the work reaches them; a missing file here is not a bug to report.
 
 ```text
-src/house/
+src/roof/
   core/            # pure modules, depend only on specs
     specs.py       # frozen dataclasses: HouseSpec, TerrainSpec, RoofSpec, ...
     roof.py        # roof surface area, material/timber cost
@@ -146,14 +146,14 @@ web/
     view.js        # display state; the only thing that writes to the panes
     runtime.js     # Pyodide, and the module list it copies into it
   package.json     # pyodide itself, plus oxlint, oxfmt, typescript
-tests/             # hand-checked cases pinning every output; mirrors src/house/
+tests/             # hand-checked cases pinning every output; mirrors src/roof/
 docs/
   spec.md          # formulas, terrain data, rationale, caveats
   decisions.md     # dated record of settled decisions — don't re-litigate these
 ```
 
 The build is a `src/` layout (`uv_build`), so imports are absolute from the
-package root: `from house.core.roof import surface_area`.
+package root: `from roof.core.roof import surface_area`.
 
 ---
 

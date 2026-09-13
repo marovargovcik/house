@@ -1,4 +1,4 @@
-"""`house.web` — the browser entry point. Composition, not new arithmetic.
+"""`roof.web` — the browser entry point. Composition, not new arithmetic.
 
 Every number it returns is already pinned by `test_sweep`, `test_csv` and
 `test_to_html`; what is untested elsewhere is the wiring. So this checks the two
@@ -16,12 +16,12 @@ from pathlib import Path
 
 import pytest
 
-from house import web
+from roof import web
 
 ROOT = Path(__file__).resolve().parent.parent
-from house.core import sweep
-from house.core.specs import AtticSpec, CostSpec
-from house.interpreters import to_csv, to_text
+from roof.core import sweep
+from roof.core.specs import AtticSpec, CostSpec
+from roof.interpreters import to_csv, to_text
 
 INPUTS = {
     "widths": [9.0, 10.0],
@@ -104,7 +104,7 @@ def test_a_cross_spec_problem_is_reported_the_same_way() -> None:
 def test_the_page_lists_every_module_it_has_to_load() -> None:
     """`web/scripts/runtime.js` names the modules to fetch; nothing else keeps that honest.
 
-    The page copies `src/house/` into Pyodide by hand, from a list, because a
+    The page copies `src/roof/` into Pyodide by hand, from a list, because a
     static server offers no way to enumerate a directory. So a module added to
     the core is invisible to the browser until someone edits that list — and the
     failure is an `ImportError` on page load, far from the change that caused it.
@@ -119,13 +119,13 @@ def test_the_page_lists_every_module_it_has_to_load() -> None:
     )
     listed = set(re.findall(r'"([^"]+)"', block.group(1)))
 
-    package = ROOT / "src" / "house"
+    package = ROOT / "src" / "roof"
     on_disk = {
         str(path.relative_to(ROOT / "src")) for path in package.rglob("*.py")
-    } - {"house/cli.py"}
+    } - {"roof/cli.py"}
 
     assert listed == on_disk, (
-        f"web/scripts/runtime.js MODULES is out of step with src/house/: "
+        f"web/scripts/runtime.js MODULES is out of step with src/roof/: "
         f"missing {sorted(on_disk - listed)}, stale {sorted(listed - on_disk)}"
     )
 

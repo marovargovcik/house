@@ -1,5 +1,5 @@
 {
-  "name": "house-web",
+  "name": "roof-web",
   "private": true,
   "description": "Lint, format and type checking for the browser page. No build step: app.js ships as written.",
   "type": "module",

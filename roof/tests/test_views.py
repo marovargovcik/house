@@ -10,9 +10,9 @@ import math
 
 import pytest
 
-from house.core import views
-from house.core.specs import AtticSpec, HouseSpec, RoofSpec
-from house.core.views import Point
+from roof.core import views
+from roof.core.specs import AtticSpec, HouseSpec, RoofSpec
+from roof.core.views import Point
 
 HOUSE = HouseSpec(width=9.0, length=10.0)
 BARE = AtticSpec(

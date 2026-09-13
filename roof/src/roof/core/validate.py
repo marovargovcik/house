@@ -18,9 +18,9 @@ width, NaN per m², and the collar note on the page — not bad input.
 
 from collections.abc import Sequence
 
-from house.core import attic as attic_calc
-from house.core import roof as roof_calc
-from house.core.specs import AtticSpec, HouseSpec, RoofSpec
+from roof.core import attic as attic_calc
+from roof.core import roof as roof_calc
+from roof.core.specs import AtticSpec, HouseSpec, RoofSpec
 
 
 def collar_fits(house: HouseSpec, roof: RoofSpec, attic: AtticSpec) -> bool:

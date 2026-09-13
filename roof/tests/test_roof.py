@@ -4,8 +4,8 @@ import math
 
 import pytest
 
-from house.core import roof
-from house.core.specs import CostSpec, HouseSpec, RoofSpec
+from roof.core import roof
+from roof.core.specs import CostSpec, HouseSpec, RoofSpec
 
 HOUSE = HouseSpec(width=9.0, length=10.0)
 BARE = {"overhang_eave": 0.0, "overhang_gable": 0.0}

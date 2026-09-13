@@ -24,9 +24,9 @@ reasoning behind each of those numbers is in `docs/spec.md` and
 import argparse
 from pathlib import Path
 
-from house.core import sweep, validate
-from house.core.specs import AtticSpec, CostSpec, collar_from_input
-from house.interpreters import to_csv, to_html, to_text
+from roof.core import sweep, validate
+from roof.core.specs import AtticSpec, CostSpec, collar_from_input
+from roof.interpreters import to_csv, to_html, to_text
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -10,9 +10,9 @@ edge:
 - `main()` is the effect: `uv run web` serves the page and opens it. It never
   runs in the browser — Pyodide imports this module and calls `report`.
 
-The counterpart to `house.cli`, and deliberately the *only* Python the browser
+The counterpart to `roof.cli`, and deliberately the *only* Python the browser
 build adds. Pyodide is CPython 3.14 — the same interpreter `uv run cli` uses — so
-`src/house/` is loaded verbatim, with no transform, no shims and no compatibility
+`src/roof/` is loaded verbatim, with no transform, no shims and no compatibility
 layer. That is the whole reason this file is short.
 
 Where it differs from `cli.py`:
@@ -29,9 +29,9 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from house.core import sweep, validate
-from house.core.specs import AtticSpec, CostSpec, collar_from_input
-from house.interpreters import to_csv, to_html, to_text
+from roof.core import sweep, validate
+from roof.core.specs import AtticSpec, CostSpec, collar_from_input
+from roof.interpreters import to_csv, to_html, to_text
 
 
 def report(payload: str) -> str:

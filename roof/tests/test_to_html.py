@@ -3,9 +3,9 @@ one card per swept row, drawn to a shared scale, and no external assets."""
 
 from pathlib import Path
 
-from house.core import sweep
-from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
-from house.interpreters import to_html, to_svg
+from roof.core import sweep
+from roof.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
+from roof.interpreters import to_html, to_svg
 
 COSTS = CostSpec(eur_per_m2=110.0)
 OVERHANGS = {"overhang_eave": 0.6, "overhang_gable": 0.4}

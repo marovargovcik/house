@@ -9,7 +9,7 @@ import sys
 
 import pytest
 
-from house import cli
+from roof import cli
 
 # One complete invocation. Deliberately not the current design — these tests
 # check the parser, and README.md is where the design's own numbers live.

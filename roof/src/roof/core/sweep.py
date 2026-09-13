@@ -14,9 +14,9 @@ it portable to a browser runtime.
 from collections.abc import Sequence
 from dataclasses import dataclass, fields
 
-from house.core import attic as attic_calc
-from house.core import roof as roof_calc
-from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
+from roof.core import attic as attic_calc
+from roof.core import roof as roof_calc
+from roof.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec
 
 
 @dataclass(frozen=True, slots=True)

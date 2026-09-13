@@ -2,7 +2,7 @@
 
 import pytest
 
-from house.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec, collar_from_input
+from roof.core.specs import AtticSpec, CostSpec, HouseSpec, RoofSpec, collar_from_input
 
 
 @pytest.mark.parametrize("pitch_deg", [0.0, 90.0, -5.0])

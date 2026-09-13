@@ -2,7 +2,7 @@ import { loadPyodide } from "pyodide";
 
 /** @import { Payload } from "./form.js" */
 
-/** @typedef {{ report: (payload: string) => string }} HouseWeb */
+/** @typedef {{ report: (payload: string) => string }} RoofWeb */
 
 /**
  * @typedef {object} Report
@@ -17,27 +17,27 @@ import { loadPyodide } from "pyodide";
 const SHAPE_ERROR_EXCERPT = 200;
 
 /**
- * Every module the page copies into Pyodide. A new module under `src/house/`
+ * Every module the page copies into Pyodide. A new module under `src/roof/`
  * has to be added here; `tests/test_web.py` checks the list against the tree.
  *
- * @type {readonly `house/${string}.py`[]}
+ * @type {readonly `roof/${string}.py`[]}
  */
 const MODULES = [
-  "house/__init__.py",
-  "house/web.py",
-  "house/core/__init__.py",
-  "house/core/specs.py",
-  "house/core/roof.py",
-  "house/core/attic.py",
-  "house/core/sweep.py",
-  "house/core/validate.py",
-  "house/core/views.py",
-  "house/interpreters/__init__.py",
-  "house/interpreters/sk.py",
-  "house/interpreters/to_svg.py",
-  "house/interpreters/to_text.py",
-  "house/interpreters/to_csv.py",
-  "house/interpreters/to_html.py",
+  "roof/__init__.py",
+  "roof/web.py",
+  "roof/core/__init__.py",
+  "roof/core/specs.py",
+  "roof/core/roof.py",
+  "roof/core/attic.py",
+  "roof/core/sweep.py",
+  "roof/core/validate.py",
+  "roof/core/views.py",
+  "roof/interpreters/__init__.py",
+  "roof/interpreters/sk.py",
+  "roof/interpreters/to_svg.py",
+  "roof/interpreters/to_text.py",
+  "roof/interpreters/to_csv.py",
+  "roof/interpreters/to_html.py",
 ];
 
 /** @param {string} text @returns {Report} */
@@ -52,7 +52,7 @@ const asReport = (text) => {
     typeof html !== "string"
   ) {
     throw new TypeError(
-      `house.web.report returned an unexpected shape: ${text.slice(0, SHAPE_ERROR_EXCERPT)}`,
+      `roof.web.report returned an unexpected shape: ${text.slice(0, SHAPE_ERROR_EXCERPT)}`,
     );
   }
 
@@ -80,10 +80,10 @@ const boot = async () => {
 
   pyodide.runPython(`import sys; sys.path.insert(0, "/lib")`);
 
-  /** @type {HouseWeb} */
-  const houseWeb = pyodide.pyimport("house.web");
+  /** @type {RoofWeb} */
+  const roofWeb = pyodide.pyimport("roof.web");
 
-  return (payload) => asReport(houseWeb.report(JSON.stringify(payload)));
+  return (payload) => asReport(roofWeb.report(JSON.stringify(payload)));
 };
 
 export { boot };

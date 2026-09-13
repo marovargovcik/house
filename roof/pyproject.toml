@@ -1,5 +1,5 @@
 [project]
-name = "house"
+name = "roof"
 version = "0.1.0"
 description = "Roof, attic, and excavation estimates for a self-build house on a sloped plot"
 readme = "README.md"
@@ -10,8 +10,8 @@ requires-python = ">=3.14"
 dependencies = []
 
 [project.scripts]
-cli = "house.cli:main"
-web = "house.web:main"
+cli = "roof.cli:main"
+web = "roof.web:main"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]

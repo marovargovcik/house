@@ -6,8 +6,8 @@ calculation refuses, but that describes a house nobody can build.
 
 import pytest
 
-from house.core import validate
-from house.core.specs import AtticSpec
+from roof.core import validate
+from roof.core.specs import AtticSpec
 
 WITH_COLLAR = AtticSpec(
     h_min=1.9,

@@ -3,7 +3,7 @@
 import math
 from dataclasses import dataclass
 
-from house.core.specs import CostSpec, HouseSpec, RoofSpec
+from roof.core.specs import CostSpec, HouseSpec, RoofSpec
 
 
 @dataclass(frozen=True, slots=True)

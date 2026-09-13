@@ -4,8 +4,8 @@ import math
 
 import pytest
 
-from house.core import sweep
-from house.core.specs import AtticSpec, CostSpec
+from roof.core import sweep
+from roof.core.specs import AtticSpec, CostSpec
 
 COSTS = CostSpec(eur_per_m2=110.0)
 
