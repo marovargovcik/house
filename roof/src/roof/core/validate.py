@@ -1,6 +1,7 @@
 """Input combinations no single spec can see. Pure; returns problems, never raises.
 
-A pitch too shallow to stand under or a collar too low are results, not problems.
+Any problem stops the whole run and names its rows — never skip rows or warn. A
+pitch too shallow to stand under, or a collar too low, is a result, not a problem.
 """
 
 from collections.abc import Sequence

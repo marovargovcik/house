@@ -23,8 +23,8 @@ most; there is no attack surface.
   duplicates, hard-coded inputs, a regression test for each bug fix.
 - Types: full hints, mypy clean, frozen dataclasses instead of positional tuples.
 
-Deliberate approximations are not defects — check the settled decisions in
-`CLAUDE.md` first. Don't ask to extract a literal used once.
+Deliberate approximations are not defects — read the docstring first. Don't ask
+to extract a literal used once.
 
 ## How
 

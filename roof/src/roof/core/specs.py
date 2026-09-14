@@ -60,7 +60,7 @@ class AtticSpec:
     - `h_min` — clear height, finished floor to finished ceiling.
     - `roof_buildup` — krokvy, insulation, lining; perpendicular to the roof plane.
     - `floor_buildup` — attic floor above the wall top; vertical.
-    - `knee_height` — nadmurovka; 0 for none.
+    - `knee_height` — nadmurovka; 0 for none. Kept so a run shows what one buys.
     - `collar_above_wall_top` — klieština underside, or `None` for none.
     """
 
