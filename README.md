@@ -7,6 +7,7 @@ slope.
 | Project | What it does |
 |---|---|
 | [`roof/`](./roof/README.md) | Roof cost and usable attic area for a range of pitches |
+| [`terrain/`](./terrain/README.md) | A 3D view of the plot to rotate in a browser |
 
 ## Setup
 

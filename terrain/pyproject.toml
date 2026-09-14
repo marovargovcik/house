@@ -1,0 +1,49 @@
+[project]
+name = "terrain"
+version = "0.1.0"
+description = "3D view of the surveyed plot"
+readme = "README.md"
+authors = [
+    { name = "Marek Vargovčík", email = "mvk@famly.co" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "plotly>=7.0.0",
+    "scipy>=1.18.1",
+]
+
+[project.scripts]
+view = "terrain.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = [
+    "ANN",  # missing annotations
+    "N",    # pep8 naming
+    "RUF",  # ruff-specific rules
+    "SIM",  # simplification
+]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "ruff>=0.16.4",
+]
+
+[[tool.mypy.overrides]]
+module = ["plotly.*", "scipy.*"]
+ignore_missing_imports = true

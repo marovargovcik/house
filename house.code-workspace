@@ -1,6 +1,7 @@
 {
   "folders": [
     { "name": "roof", "path": "roof" },
+    { "name": "terrain", "path": "terrain" },
     { "name": "house", "path": "." }
   ]
 }

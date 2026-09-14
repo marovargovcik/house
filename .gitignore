@@ -8,3 +8,6 @@ wheels/
 
 # Type checking for web/app.js — dev only; the page ships the .js as written.
 roof/web/node_modules/
+
+# Generated 3D views.
+terrain/*.html
