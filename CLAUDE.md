@@ -2,346 +2,140 @@
 
 ## What this repo is
 
-Tools and models for a self-build house on a sloped plot near Trenčín, kept in
-one repo as **isolated projects**. None of them is engineering-grade — the goal
-is **trustworthy, hand-verifiable numbers** and an honest picture of how the
-house sits in the terrain.
+Tools for a self-build house on a sloped plot near Trenčín. Not
+engineering-grade: the goal is **hand-verifiable numbers**.
 
-| Project | What it is | Status |
-|---|---|---|
-| [`roof/`](./roof) | Roof cost and usable attic area, swept across width and pitch. Python, plus a Pyodide browser page | working |
-| `terrain/` | Survey points → plot frame → triangle mesh → `Z_ground(x, y)`, contours, profiles. Python | planned |
-| `excavation/` | Cut volume and max cut depth against pad height, on top of `terrain`. Python | planned |
-| `scene/` | Terrain and house massing drawn: SVG long sections and site plan, PyVista 3D views later. Python | planned |
-| `model/` | Sweet Home 3D interior model | planned |
+| Project | What it is |
+|---|---|
+| [`roof/`](./roof) | Roof cost and usable attic area across pitches. Python, plus a Pyodide browser page |
 
-Each project has its own `CLAUDE.md` with its commands and structure — **read it
-before working in that project.** Facts about the plot (survey, coordinate frame,
-placement) live in [`docs/site.md`](./docs/site.md); decisions that span projects
-in [`docs/decisions.md`](./docs/decisions.md).
+**Read a project's own `CLAUDE.md` before working in it.** The survey is in
+[`data/README.md`](./data/README.md).
 
-> [!NOTE]
-> A planned project has no folder until work on it starts; its spec lives in
-> `docs/site.md` meanwhile. A missing folder is not a bug to report.
-
-## Repo layout and isolation
+## Layout
 
 ```text
 CLAUDE.md  README.md  REVIEW.md  house.code-workspace
 .githooks/pre-commit   # runs <project>/check for every project a commit touches
-.gitattributes         # Git LFS for Sweet Home 3D models (.sh3d)
-docs/                  # site.md (plot, frame, survey), decisions.md (cross-project)
-data/                  # the survey: terrain.txt, .dwg, .pdf — read-only source data
+data/                  # the survey — read-only
 roof/                  # one project = one folder
 ```
 
-- **A project is self-contained:** its own `pyproject.toml`, `uv.lock`,
-  `.python-version`, `.venv`, `check`, `CLAUDE.md`, `README.md`, `docs/` and
-  `.vscode/`. There is no uv workspace and no Python configuration at the root.
-- **A Python project uses another through a path dependency**, never a workspace:
-
-  ```toml
-  [tool.uv.sources]
-  terrain = { path = "../terrain", editable = true }
-  ```
-
-- **Projects share data and documented facts, not environments.** Survey files
-  live once in `data/`; the plot frame is defined once in `docs/site.md`.
-- **Every project has an executable `check`** that runs all of its gates. The
-  root hook finds it by that name.
+- **A project is self-contained:** own `pyproject.toml`, `uv.lock`,
+  `.python-version`, `.venv`, `check`, `CLAUDE.md`, `README.md` and `.vscode/`.
+  No Python config at the root.
+- **Every project has an executable `check`** running all its gates.
 
 ## Commands
 
 | Task | Command |
 |------|---------|
-| Setup (fresh clone) | `git config core.hooksPath .githooks && git lfs install`, then each project's own setup |
-| A project's command from the repo root | `uv run --directory roof pytest` — the project's `CLAUDE.md` lists them |
+| Setup (fresh clone) | `git config core.hooksPath .githooks`, then the project's setup |
+| A project's command from the root | `uv run --directory roof pytest` |
 | Gates for the projects a commit touches | `.githooks/pre-commit` |
 | Gates for every project | `.githooks/pre-commit --all` |
 
 > [!WARNING]
-> `git config core.hooksPath .githooks` is **per clone**. Without it the
-> pre-commit hook silently never runs.
+> The hook config is **per clone**. Without it the hook never runs.
 
-> [!WARNING]
-> Sweet Home 3D models (`*.sh3d`) go through Git LFS (`.gitattributes`).
-> Without `git lfs install` they are committed as ordinary blobs, and only a
-> history rewrite takes them out again.
-
----
-
-## Core Principles
+## Principles
 
 > Adapted from [Andrej Karpathy's CLAUDE.md](https://github.com/forrestchang/andrej-karpathy-skills/blob/main/CLAUDE.md).
-> These shape *how* you collaborate before any language-specific rule kicks in.
 
-### Think Before Coding
+- **Think first.** State assumptions; lay out interpretations of an ambiguous
+  request; push back on over-scoped ones; stop and ask when confused.
+- **Simplicity.** Only what's asked. No speculative features, premature
+  abstractions, flags or shims. Handle only errors that can happen. If 200 lines
+  could be 50, rewrite.
+- **Surgical changes.** Don't touch adjacent code, formatting or comments; match
+  existing conventions; flag dead code instead of deleting it; remove only the
+  orphans your change made.
+- **Goal-driven.** Turn a request into checkable criteria; plan multi-step work
+  with checkpoints; for a bug, write the failing test first.
 
-- **State assumptions explicitly.** Name what you're assuming; ask if uncertain rather than guessing.
-- **Surface multiple interpretations.** When a request is ambiguous, lay out the options instead of silently picking one.
-- **Advocate for simplicity.** Push back on unclear or over-scoped requirements before writing code.
-- **Stop when confused.** Don't code through confusion — identify what's unclear and resolve it first.
+## Architecture invariants
 
-### Simplicity First
+Python won't enforce these, so uphold them by discipline.
 
-- **Implement only what's asked.** Skip speculative features beyond stated requirements.
-- **Avoid premature abstraction.** No abstractions for single-use patterns; three similar lines beats a premature helper.
-- **Skip unnecessary flexibility.** No configurability, feature flags, or backwards-compatibility shims unless explicitly requested.
-- **Minimize error handling.** Skip handling for scenarios that can't occur. Trust internal code; only validate at system boundaries.
-- **Ruthlessly trim excess code.** If 200 lines could be 50, rewrite.
+- **`core/` is pure:** no IO, no print, no global state, no argument mutation.
+- **IO and rendering live in `interpreters/` and entry points.** `core/` never
+  imports them.
+- **Interpreters split building from writing:** `render_html` builds the string,
+  `write_html` puts it on disk.
+- **Validation is layered.** A bad field: the spec's `__post_init__` raises. A bad
+  combination: `core/validate.py` returns problems and the entry point stops the
+  run. Past that, trust inputs — no defensive clamps downstream.
+- **Calculations are named functions**, never inside render or UI code. Drawing
+  coordinates are numbers too: they live in `core/views.py`, pinned by tests.
+- **Every numeric output has a hand-checked test** — e.g. 45° roof → footprint ×
+  √2.
 
-### Surgical Changes
+## Python style
 
-- **Preserve adjacent code.** Don't "improve" unrelated code, formatting, or comments while making your change.
-- **Don't refactor stable code** unless explicitly asked.
-- **Match existing codebase conventions** over personal preference.
-- **Flag dead code separately** rather than deleting it unprompted.
-- **Clean only your own orphans.** Remove imports/variables your change made unused; preserve pre-existing dead code.
+- **Pure functions first**; effects at the edges.
+- **Frozen dataclasses** (`slots=True` where free). Never mutate arguments.
+- **Effectful collaborators are passed in**, typed as a `typing.Protocol` — no
+  globals or singletons.
+- **Model the domain with types:** dataclasses or `NamedTuple` for records,
+  `Enum` or a union of dataclasses with `match` for alternatives. No positional
+  tuples.
+- **Errors:** no IO-error handling in the core; an expected failure goes in the
+  return type; raise only at boundaries.
+- **Comprehensions over mutation** where readable. Obvious beats clever.
+- **Function size:** watch for mixed abstraction levels and functions that are
+  hard to name.
 
-### Goal-Driven Execution
+## Python tooling
 
-- **Define verifiable success criteria.** Turn vague requests into testable goals with clear checks.
-- **Plan multi-step tasks** with verification points before implementing.
-- **Use tests to verify fixes.** When fixing a bug, write a test that reproduces it before implementing the fix.
-- **Build independently with clear criteria.** Strong success metrics enable autonomous work without constant re-clarification.
+Python 3.14+, pinned per project. Add a runtime dependency only when a module
+imports it; `roof` has none on purpose. All tool config goes in
+`pyproject.toml`.
 
----
-
-## Architecture — the load-bearing invariants
-
-These are the rules every Python project here depends on. They are not enforced
-by the language (Python has no `F[_]` to make side effects visible in types), so
-they must be upheld **by discipline** — which means they matter more here, not
-less.
-
-- **`core/` is pure.** Modules in `core/` contain only pure functions: same
-  inputs → same outputs, no IO, no file/network/print, no global state, no
-  mutation of arguments. This is what makes the numbers testable in isolation and
-  trustworthy. A calculation that reaches for IO is a bug in the design.
-- **IO and rendering live in `interpreters/` and entry points only.** JSON export,
-  spreadsheet export, a 3D view — these *consume* what the core produces.
-  `core/` never imports an interpreter, a plotting library, or anything that does IO.
-- **An interpreter splits building from writing.** `render_html` / `write_html`,
-  `render_csv` / `write_csv`: the string is built by a pure function and one thin
-  wrapper puts it on disk. A caller with nowhere to write — a test, a browser
-  runtime — gets the output without the effect.
-- **Validation is layered, and the layer is decided by what the check can see.**
-  A field that is nonsense on its own is refused by its spec's `__post_init__`;
-  a *combination* that no single spec can see is reported by `core/validate.py`,
-  which the entry point runs before anything is computed. Specs raise (the value
-  is unusable); `validate` **returns** its problems (the entry point is what
-  decides a run stops). Past that boundary, inputs are trusted — don't add a
-  defensive clamp downstream for a shape validation already rules out.
-- **All terrain access goes through `Z_ground(x, y)`.** No module inlines terrain
-  assumptions — excavation, the scene and anything else ask `terrain` for a
-  height. See `docs/site.md`.
-- **Calculations are named functions, never buried in render/UI callbacks.** So
-  they can be unit-tested independently of any visualization. This extends to
-  drawings: a drawing's *coordinates* are numbers, so they live in `core/views.py`
-  and are pinned by tests; only the string building lives in an interpreter.
-- **Every numeric output has a hand-checked `pytest` case that pins it.** A new
-  calculation is not done until a test fixes its value against a hand-computed
-  reference. Prefer a few high-value checks (flat plot → 0 excavation, 45° roof →
-  footprint × √2) over many shallow ones.
-
----
-
-## Functional style in Python
-
-The FP discipline from the core principles, expressed in Python idioms (not
-Scala's). The principle transfers; the syntax is Python's.
-
-- **Pure functions first.** Put as much logic as possible in pure, easily testable
-  functions. Side effects are pushed to the edges (interpreters, entry points).
-- **Immutable data.** Model domain data as **frozen dataclasses**
-  (`@dataclass(frozen=True)`). Never mutate arguments. Return new values rather
-  than mutating in place.
-- **Explicit dependencies.** Effectful collaborators are passed as explicit
-  arguments, typed against a `typing.Protocol`, not reached for via globals or
-  module-level singletons. This is the Python stand-in for injected algebras —
-  same principle (dependencies are visible and swappable), Python form.
-- **Model the domain with types.** Product types → frozen dataclasses or
-  `NamedTuple`. Sum types → `enum.Enum`, or a union of frozen dataclasses consumed
-  with structural `match`/`case`. Prefer a named type over a bare tuple whose
-  fields you'd access positionally.
-- **Errors are explicit at boundaries.** The pure core does not do IO-error
-  handling. Where a function can legitimately fail as part of its result, model
-  that in the return type (e.g. return an explicit result/`None`) rather than
-  raising for control flow. Raise exceptions at system boundaries, validate input
-  only there — trust internal code.
-- **Prefer comprehensions and pure transforms** over imperative accumulation with
-  mutation, where it stays readable. Don't sacrifice clarity for point-free
-  cleverness — obvious code wins.
-
-## Function size
-
-Few absolute rules, but watch for these pitfalls:
-
-- **Large jumps in abstraction levels** — e.g. inline unit-conversion or validation
-  buried inside a function whose primary concern is geometry.
-- **Single Responsibility violations** — if it's hard to give the function a
-  descriptive, succinct name, it's probably doing too much.
-
----
-
-## Python conventions
-
-**Tech stack**: Python 3.14+, pinned in each project's `.python-version`. Runtime
-dependencies are per project and kept minimal — add one with `uv add` when a
-module actually imports it, not before. `roof` has none at all, on purpose (see
-`roof/CLAUDE.md`).
-
-**Toolchain** — the 2026-consolidated stack, mostly one company (Astral). All
-tool configuration belongs in the project's `pyproject.toml`, never in per-tool
-dotfiles:
-
-- **`uv`** — Python version, virtualenv, dependency resolution, locking, and command
-  running, all in one (replaces pip/venv/poetry/pyenv).
-- **`ruff`** — lint *and* format in one binary (replaces black/flake8/isort/
-  pyupgrade). The formatter is black-compatible.
-- **`mypy`** — type checking, and the CI gate. Chosen over `pyright`/`ty` because
-  it's the most mature and most compatible with `numpy`/`scipy` type stubs, which
-  matters for a trust-the-numbers project. `ty` (Astral's Rust type checker) is
-  much faster and worth revisiting once it settles, but `mypy` is the source of
-  truth for now. Configured `strict = true` in `pyproject.toml`.
-- **`pylance`** — a *second* type checker, running in the editor only. See
-  [Two type checkers](#two-type-checkers--mypy-wins) below before acting on
-  anything it reports.
+- **`uv`** — environment, dependencies, lockfile, running. Always `uv run …`,
+  never activate a venv. Commit `uv.lock`; `uvx` for one-off tools.
+- **`ruff`** — lint and format; must pass clean. Don't hand-format.
+- **`mypy`** (`strict`) — the type gate; must pass clean. Type hints on every
+  signature.
 - **`pytest`** — tests.
+- Imports at the top, absolute. Factories as `@classmethod` or next to their type.
 
-### Two type checkers — mypy wins
+**Pylance vs mypy.** Pylance runs in the editor at `basic` and is advisory;
+**mypy wins**. Settle a disagreement with a real annotation
+(`rows: list[dict[str, float]] = []`), never `# type: ignore` for a Pylance-only
+complaint — use `# pyright: ignore` if you must. Don't raise Pylance to `strict`.
 
-Two type checkers see this code, and they are set up so they rarely disagree:
+**Enforcement.** On save, ruff and mypy run from the project's own `.venv` — open
+`house.code-workspace`. On commit, the hook runs `<project>/check` over the whole
+project, so an unrelated dirty file blocks it; bypass with
+`git commit --no-verify`.
 
-| Checker | Where it runs | Configured in | Authority |
-|---|---|---|---|
-| `mypy` (`strict = true`) | CLI, **editor on save**, pre-commit hook, CI | `pyproject.toml` | **source of truth** |
-| Pylance / Pyright (`basic`) | VS Code editor only | the project's `.vscode/settings.json` | advisory |
+## Units and vocabulary
 
-The editor runs the **project's own mypy** via `ms-python.mypy-type-checker` with
-`importStrategy: fromEnvironment` — the same binary and config the commit hook
-uses, so an editor diagnostic and a blocked commit are the same event. Pylance is
-deliberately held at `basic`: it earns its place as the language server
-(completion, hover, go-to-definition), and at `basic` it still catches undefined
-names and bad attribute access without arguing with mypy about inference.
-
-> [!IMPORTANT]
-> **When they disagree, `mypy` wins.** It is what gates the commit, so code that
-> satisfies Pylance but fails `mypy` is broken; the reverse is at worst untidy.
-> Never silence a `mypy` error to appease Pylance.
-
-- **Do this** — find the annotation that satisfies both. Pyright is stricter about
-  *inferred* types, so a real annotation usually fixes it cleanly. Example:
-  `rows = []` passes `mypy` (which infers the element type from later `.append`
-  calls) but Pyright reports `list[Unknown]`; writing
-  `rows: list[dict[str, float]] = []` satisfies both and is better code anyway.
-- **Don't do this** — add `# type: ignore` for a Pylance-only complaint. That
-  suppresses `mypy`, the checker that actually matters, to quiet one that doesn't.
-  `# pyright: ignore` is the narrower tool if suppression is genuinely needed.
-- **Don't raise Pylance back to `strict`** without a reason. It was lowered on
-  purpose: `numpy`/`pandas` generics are where Pyright and mypy diverge most, and
-  only mypy can fail a commit.
-
-### uv workflow
-
-- Run everything from the project's folder, or with `uv run --directory <project>`
-  from the repo root. Each project has its own `.venv`.
-- Add deps with `uv add <pkg>`; dev deps with `uv add --dev pytest ruff mypy`.
-- **Never activate a virtualenv manually** — run everything through `uv run`
-  (`uv run pytest`, `uv run ruff check`, `uv run mypy .`) so the right environment
-  is always used.
-- **Commit `uv.lock`** so the project runs identically everywhere. Use
-  `uv sync --frozen` in CI.
-- Use `uvx <tool>` for one-off tools you don't want as project deps.
-
-### Enforcement
-
-- **Type hints are mandatory** on every function signature (params and return).
-  The compiler safety Scala gave for free is now the type checker's job — it is
-  not optional. `mypy` must pass clean; a type error is a broken build, the same
-  way an unresolved Scala warning was.
-- **`ruff` must pass clean** (lint and format). Format with `uv run ruff format`;
-  don't hand-format. `ruff check --fix` handles unused imports and outdated syntax —
-  use it liberally.
-- Use `@dataclass(frozen=True)` for data representation. Add `slots=True` where it
-  costs nothing.
-- Define related constructors/factories as `@classmethod` or module-level functions
-  on/near the type, not scattered.
-- Prefer standard-library idioms over hand-rolled loops, and `numpy` where a
-  project uses it for grid work — but keep the calculation legible and auditable
-  (this is a trust-the-numbers project).
-- Imports at the top of the file; no inline imports except to break a genuine cycle
-  (and prefer restructuring over that).
-- Absolute imports within the package.
-
-**Where enforcement actually happens:**
-
-- **On save** — the project's `.vscode/settings.json` runs `ruff format` plus
-  ruff's autofix and import sorting via the `charliermarsh.ruff` extension. It
-  uses the project's pinned ruff (`ruff.importStrategy: fromEnvironment`), not the
-  extension's bundled copy, so the editor and CI can't drift apart. Open
-  `house.code-workspace`, so each project is its own workspace folder and finds
-  its own `.venv`.
-- **As you type** — Pylance type-checks in the editor. It is **advisory only**;
-  see [Two type checkers](#two-type-checkers--mypy-wins).
-- **On commit** — `.githooks/pre-commit` runs `<project>/check` for every project
-  the commit touches; for Python that is `ruff format --check`, `ruff check`,
-  `mypy`, and `pytest`, aborting the commit on any failure. A check covers the
-  project's whole working tree, not just staged files, so an unrelated dirty file
-  in that project will block the commit. Bypass deliberately with
-  `git commit --no-verify`.
-
-## Units, vocabulary & coordinate frame
-
-- **Domain terminology, including Slovak equivalents for roof/attic terms, is in
-  [`roof/docs/spec.md`](./roof/docs/spec.md)** — use the Slovak terms in any
-  output intended for the projektant or the builders.
-- Units are **metres, degrees, and EUR** throughout. Convert at boundaries only;
-  the core speaks these units and nothing else.
-- The plot has **one fixed, documented coordinate frame**, defined in
-  [`docs/site.md`](./docs/site.md). Survey points arrive in S-JTSK and are
-  converted **once at ingestion**; every core function speaks the plot frame.
-
----
+- **Metres, degrees, EUR.** Convert at boundaries only.
+- **Slovak terms** are in [`roof/CLAUDE.md`](./roof/CLAUDE.md); use them in
+  anything for the projektant or builders.
 
 ## Testing
 
-- **Write as few tests as possible that cover all the important properties.**
-  Before writing tests, identify the specific properties worth testing. Only write
-  tests that cover **different** properties and code paths — no duplicates, no
+- **Fewest tests that cover the important properties.** No duplicates, no
   low-value tests.
-- A good test **breaks if the behavior it describes changes, and only then.** Don't
-  test implementation details.
-- **Every numeric output is pinned to a hand-computed reference.** These are the
-  most important tests in the project — they are what "trust the numbers" means.
-  Examples: flat plot with pad at grade → 0 excavation; roof at 45° → footprint × √2;
-  rectangle of area A at average cut depth d → volume ≈ A × d.
-- **For bug fixes**: write a test that reproduces the bug before fixing it.
-- Prefer **hard-coded values** for any dimensions/inputs in tests over generated or
-  "current" values, so tests are deterministic.
-- Place tests in the project's `tests/`, mirroring its package structure.
-- Run tests with `uv run pytest` in the project. Scope to a module with
-  `uv run pytest tests/test_roof.py`.
+- A test breaks when the behaviour changes, and only then — don't test
+  implementation details.
+- **Pin every number to a hand-computed reference.**
+- Hard-coded inputs. Tests in `tests/`, mirroring the package.
 
----
+## General
 
-## General practices
-
-- **Code vs Documentation**: when code behavior contradicts documentation, trust
-  the code as the source of truth — then fix the doc.
-- Use GNU `sed` via `gsed` instead of `sed` for cross-platform compatibility.
-- Avoid `git -C` and `gh --repo` unless strictly necessary.
-- When analyzing code, check test files for additional context on usage patterns.
+- When code and docs disagree, the code is right — fix the doc.
+- `gsed`, not `sed`. Avoid `git -C` and `gh --repo`.
+- Check the tests for usage examples.
 
 ## Comments
 
-- Only add comments when the code is not self-explanatory.
-- Explain *why*, not *what*. Prefer clear, obvious code over a comment.
-- Add comments about non-obvious assumptions or side-effects.
-- **A deliberate imprecision is not a bug — don't "fix" it.** Several modelling
-  choices in this repo are intentionally approximate for budgeting. When you
-  spot one, leave it and check the decision logs — the repo's
-  `docs/decisions.md` and the project's own — before "correcting" it.
+- Only where the code can't speak for itself. Explain *why*, in a line or two.
+- No history ("first did", "no longer") — git has it.
+- **A deliberate imprecision is not a bug.** Check the settled decisions in the
+  project's `CLAUDE.md` before "fixing" one.
 
 ## Talking to me
 
@@ -353,42 +147,27 @@ Short. Verbosity is a bug, not thoroughness.
   sell the work — say what's done, what isn't, what broke.
 - **Explain on request, not by default.** Offer ("want the detail?") instead of
   pre-emptively writing three paragraphs.
-- **Skip the mechanism tour.** Answer the question that was asked, not the four
-  related ones.
+- **Skip the mechanism tour.** Answer the question that was asked.
 
-## Commit messages
+## Commits
 
-- **One-line subject**, imperative, explains the *why* when it isn't obvious.
-  Add a body only when the why genuinely needs a sentence or two.
-- **Prefix the subject with the project** when the commit stays inside one:
-  `roof: Cap the clear ridge height at the collar tie`. A change spanning projects
-  or touching only the root goes unprefixed.
-- Prefer a **commit-by-commit approach**: break changes into smaller, logical
-  commits; each commit is one focused change, easy to review and revert.
-- **PR descriptions stay short** — what changed and why, a few lines. No file
-  walkthrough; the diff already shows that.
+- **One-line imperative subject**; a body only when the why needs it.
+- **Prefix with the project** when the commit stays inside one:
+  `roof: Cap the clear ridge height at the collar tie`.
+- Small, focused commits. PR descriptions: a few lines, no file walkthrough.
 
 ## Documentation
 
-Docs live in `docs/` — the repo's for what spans projects, a project's own for
-the rest — with kebab-case filenames. Style:
-
-- ATX-style headings (`#`, `##`). Specify the language on every code block.
-- `-` for unordered lists. Standard Markdown tables.
-- GitHub-flavored callouts for important info: `> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`.
-- For style guides, use a **"Do this / Don't do this"** pattern with concrete
-  examples, and always justify *why*.
-- Reference code as `file_path:line_number` when pointing at a specific
-  implementation.
+- **`README.md`** — what it does today, for people, in plain words. No tech
+  decisions, no plans; readable in a minute or two.
+- **`CLAUDE.md`** — how and why, for the agent.
+- No `docs/` folders. ATX headings, a language on every code block, `-` lists,
+  GitHub callouts.
 
 ## Code review
 
-- Detailed guidelines in [`REVIEW.md`](./REVIEW.md).
-- Priority order: **correctness** (do the numbers match the hand-checked
-  references?) → **the purity boundary** (is `core/` still pure, is IO only at the
-  edges?) → **clarity** → **style** → **performance**.
+See [`REVIEW.md`](./REVIEW.md). Priority: correctness → purity → clarity → style
+→ performance.
 
-## Repeated feedback
-
-- If you notice repeated requests for similar changes or expressions of
-  frustration, suggest updating these instructions.
+If you notice the same correction or frustration coming up repeatedly, suggest
+updating these instructions.
