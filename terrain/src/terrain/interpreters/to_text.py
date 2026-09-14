@@ -4,7 +4,9 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from terrain.core import excavation
 from terrain.core.boundary import Side
+from terrain.core.excavation import Pit
 from terrain.core.house import Corner, HouseSpec, ShedSpec, TerraceSpec
 from terrain.core.profile import END, START, Profile
 
@@ -86,6 +88,22 @@ def _terrace_lines(
     ]
 
 
+def _dig_lines(pits: Sequence[Pit]) -> list[str]:
+    cut, fill = excavation.totals(pits)
+    return [
+        "Excavation with vertical sides, as dug (loosened soil takes more room):",
+        *(
+            f"  {p.name:<18} {p.area.back - p.area.front:4.1f} x "
+            f"{p.area.south - p.area.north:4.1f} m to {p.formation:.2f}   "
+            f"cut {p.cut:6.1f} m³   fill {p.fill:5.1f} m³   "
+            f"footings {p.footing_length:g} m: {p.footings:5.1f} m³"
+            for p in pits
+        ),
+        f"  total cut {cut:.0f} m³ with footings, fill {fill:.0f} m³",
+        "",
+    ]
+
+
 def _flag(distance: float, limit: float) -> str:
     return f" < {limit:g}!" if distance < limit else "      "
 
@@ -113,6 +131,7 @@ def render_summary(
     house: tuple[HouseSpec, Sequence[Corner]],
     shed: tuple[ShedSpec, Sequence[Corner], float],
     terrace: tuple[TerraceSpec, float, Sequence[Corner]],
+    pits: Sequence[Pit],
     clearances: Sequence[Clearance],
     limits: tuple[float, float],
     inside: bool,
@@ -124,6 +143,7 @@ def render_summary(
             *_house_lines(*house),
             *_shed_lines(*shed),
             *_terrace_lines(*terrace),
+            *_dig_lines(pits),
             *_side_lines(clearances, *limits, inside),
             f"  area {area:.0f} m²",
         ]

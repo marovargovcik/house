@@ -3,7 +3,16 @@
 import argparse
 from pathlib import Path
 
-from terrain.core import boundary, features, ground, house, profile, survey, views
+from terrain.core import (
+    boundary,
+    excavation,
+    features,
+    ground,
+    house,
+    profile,
+    survey,
+    views,
+)
 from terrain.interpreters import to_html, to_text
 
 HOUSE_FLAGS = (
@@ -35,6 +44,13 @@ TERRACE_FLAGS = (
     ("--terrace-from-back", "metres short of the house's back wall"),
 )
 
+DIG_FLAGS = (
+    ("--floor-buildup", "metres from a finished floor to the gravel's bottom"),
+    ("--footing-width", "metres"),
+    ("--footing-depth", "metres below the gravel's bottom"),
+    ("--working-space", "metres dug beyond buried walls"),
+)
+
 LAYOUT = r"""
 the layout being tried now, run from terrain/:
 
@@ -44,7 +60,8 @@ the layout being tried now, run from terrain/:
     --pitch 25 --boundary-gap 2.5 \
     --shed-start 40 --shed-offset 7 --shed-depth 2.8 --shed-length 10 \
     --shed-floor 273.2 --shed-height 2.5 --shed-boundary-gap 2 \
-    --terrace-length 7 --terrace-width 3 --terrace-from-back 1
+    --terrace-length 7 --terrace-width 3 --terrace-from-back 1 \
+    --floor-buildup 0.5 --footing-width 0.6 --footing-depth 0.8 --working-space 0.8
 """
 
 
@@ -72,6 +89,7 @@ def main() -> None:
         ("house (required)", HOUSE_FLAGS),
         ("garden shed (required)", SHED_FLAGS),
         ("terrace (required)", TERRACE_FLAGS),
+        ("excavation (required)", DIG_FLAGS),
     ):
         group = parser.add_argument_group(title)
         for flag, help_text in flags:
@@ -106,6 +124,12 @@ def main() -> None:
             length=args.terrace_length,
             width=args.terrace_width,
             from_back=args.terrace_from_back,
+        )
+        dig_spec = excavation.DigSpec(
+            floor_buildup=args.floor_buildup,
+            footing_width=args.footing_width,
+            footing_depth=args.footing_depth,
+            working_space=args.working_space,
         )
     except ValueError as invalid:
         parser.error(str(invalid))
@@ -162,6 +186,9 @@ def main() -> None:
         terrace_corners = house.outline_corners(
             points, mesh, "terrace", terrace_outline, house_spec.upper_floor
         )
+        pits = excavation.pits(
+            points, mesh, start, end, house_spec, shed_spec, dig_spec, excavation.CELL
+        )
         setbacks = [
             boundary.setback(
                 points,
@@ -193,6 +220,7 @@ def main() -> None:
                 boundary.outline_gap(shed_outline, house_outline),
             ),
             (terrace_spec, house_spec.upper_floor, terrace_corners),
+            pits,
             clearances,
             (args.boundary_gap, args.shed_boundary_gap),
             inside,

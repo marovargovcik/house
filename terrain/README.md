@@ -37,3 +37,5 @@ road  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  east fence
 - Upper floor at 273.2, level with the ground about 33 m up.
 - Shed 10 x 2.8 m against the back wall, sharing it, floor at 273.2.
 - Terrace 7 x 3 m on the south side, facing point 24, 1 m short of the back wall.
+- Excavation: pits with vertical sides, working space around the buried garage
+  and shed walls, footings under outer walls only.
