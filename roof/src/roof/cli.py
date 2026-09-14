@@ -1,24 +1,7 @@
-"""Entry point for the Module 1 sweep (`docs/spec.md` §3): width by pitch.
+"""Command-line entry point: flags -> core -> stdout and files.
 
-The imperative shell — it reads the inputs, calls the pure core, and prints.
-
-**Every input is required.** A default here would be the same failure the core
-already refuses: `AtticSpec` takes `h_min` and both build-ups with no defaults by
-decision (`docs/decisions.md`) so an unverified number cannot reach a result
-unannounced, and a default in the entry point would put it back one layer out.
-So every figure in a report is one somebody typed on the day.
-
-There are no exceptions. `--collar` is required too, with 0 meaning "no collar
-tie" — the one place a value stands in for absence, because a flag cannot be both
-required and omitted. `core.specs.collar_from_input` does the translation — the
-browser build accepts 0 for the same thing, so the rule lives in one place rather
-than in each entry point. `AtticSpec` keeps `float | None`, since absence
-genuinely is not a height, and it still rejects a collar sitting at or below the
-wall top.
-
-`README.md` holds the invocation for the design as it currently stands, and the
-reasoning behind each of those numbers is in `docs/spec.md` and
-`docs/decisions.md` — not here, where it would rot next to a value nobody reads.
+Every input is a required flag, so no unchosen number reaches a result.
+`--collar 0` means no collar tie, since a required flag cannot be omitted.
 """
 
 import argparse
@@ -30,7 +13,7 @@ from roof.interpreters import to_csv, to_html, to_text
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Every sweep input as a required flag. See the module docstring."""
+    """Every sweep input as a required flag."""
     parser = argparse.ArgumentParser(
         description="Roof and attic sweep over width and pitch. "
         "Every input is required — see README.md for the current design.",
@@ -91,8 +74,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--collar",
         type=float,
         required=True,
-        help="klieština underside above the wall top; 0 for a roof with no "
-        "collar tie. Below h_min + floor build-up it rules the attic out entirely",
+        help="klieština underside above the wall top; 0 for none",
     )
 
     parser.add_argument(
@@ -111,11 +93,8 @@ def main() -> None:
 
     collar = collar_from_input(args.collar)
 
-    # Validation is the whole of the boundary, and it runs before anything is
-    # swept: the spec constructors reject a field that is nonsense on its own,
-    # and `validate` reports the combinations no single spec can see. Both
-    # surface as `parser.error` — exit 2 with the message — rather than a
-    # traceback. Past this point the inputs are trusted.
+    # Specs reject a bad field, `validate` a bad combination; both exit through
+    # `parser.error` rather than a traceback.
     try:
         attic = AtticSpec(
             h_min=args.h_min,

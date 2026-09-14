@@ -1,14 +1,7 @@
-"""Parameter sweeps over the roof/attic model. Pure — builds rows, writes nothing.
+"""Width x pitch sweep. Pure.
 
-The sweep exists to surface the trade-off `docs/spec.md` §3b names: a steeper
-pitch buys usable attic area but costs roof surface, since area grows as
-`1 / cos θ`. `eur_per_usable_m2` is where the two meet.
-
-A row is a frozen dataclass rather than a DataFrame row. The table was only ever
-a container — built from dicts and immediately unpacked back into dicts by the
-interpreters — and a named type is what this project reaches for anyway. It also
-leaves the whole Module 1 pipeline on the standard library, which is what makes
-it portable to a browser runtime.
+A steeper pitch buys attic area but costs roof surface; `eur_per_usable_m2` is
+where the two meet.
 """
 
 from collections.abc import Sequence
@@ -49,12 +42,7 @@ def width_by_pitch(
     overhang_eave: float,
     overhang_gable: float,
 ) -> tuple[SweepRow, ...]:
-    """One row per (width, pitch) combination.
-
-    `eur_per_usable_m2` is NaN where the pitch is too shallow to yield any
-    habitable area — dividing by zero usable area would invent a number, and NaN
-    keeps those rows visible in the table rather than silently ranking them best.
-    """
+    """One row per (width, pitch). `eur_per_usable_m2` is NaN with no usable area."""
     return tuple(
         _row(
             HouseSpec(width=width, length=length),
@@ -81,14 +69,8 @@ def _row(
         width_m=house.width,
         pitch_deg=roof.pitch_deg,
         roof_area_m2=geom.surface_area,
-        # The knee wall (nadmurovka) sits on the wall top and the roof springs
-        # from it, so it raises the ridge one-for-one. `roof.ridge_height` is the
-        # slope rise alone, which is why the knee is added here rather than
-        # hidden in the geometry.
+        # `ridge_height` is the slope rise alone; the knee wall lifts it.
         ridge_above_wall_top_m=geom.ridge_height + attic.knee_height,
-        # What is left of that ridge after the roof and floor build-ups. The
-        # structural figure is what a height limit measures; this is what you
-        # stand under.
         clear_ridge_m=usable.clear_ridge_height,
         usable_width_m=usable.usable_width,
         usable_area_m2=usable.usable_area,

@@ -1,5 +1,4 @@
-/* The drawn report is not styled from here: it arrives from
-   interpreters/to_html.py as a self-contained document in an iframe. */
+/* The report styles itself: it is a separate document in an iframe. */
 
 :root {
   --bg: #fbfaf8;

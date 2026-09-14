@@ -1,9 +1,4 @@
-"""Sweep rows → CSV.
-
-Split in two on purpose: `render_csv` builds the text and `write_csv` puts it on
-disk. Only the second is an effect, so a caller with nowhere to write — a browser
-runtime, a test — can have the numbers without one.
-"""
+"""Sweep rows → CSV."""
 
 import csv
 import io
@@ -16,19 +11,12 @@ from roof.core.sweep import SweepRow, column_names
 
 
 def render_csv(rows: Sequence[SweepRow]) -> str:
-    """The rows at full precision.
-
-    `str` of a float round-trips exactly in Python, so the CSV carries what the
-    calculation produced rather than what a display format left of it — the
-    rounding belongs to whatever reads this, not to the record of it.
-    """
+    """The rows at full precision; rounding is the reader's job."""
     out = io.StringIO(newline="")
     writer = csv.writer(out, lineterminator="\n")
     writer.writerow(column_names())
     writer.writerows(
-        # An empty cell rather than the text "nan": a spreadsheet reads the first
-        # as a gap in a numeric column and the second as a string, which turns
-        # the whole column into text.
+        # Empty, not "nan", so a spreadsheet keeps the column numeric.
         ["" if isinstance(v, float) and math.isnan(v) else v for v in astuple(row)]
         for row in rows
     )

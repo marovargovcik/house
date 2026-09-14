@@ -21,8 +21,7 @@ ROW = SweepRow(
 
 
 def test_csv_keeps_full_precision() -> None:
-    """Rounding belongs to whatever reads the CSV, not to the record of it, so
-    every figure must survive the round trip bit for bit."""
+    """Every figure survives the round trip exactly."""
     lines = to_csv.render_csv([ROW]).splitlines()
 
     assert lines[0] == ",".join(column_names())
@@ -41,16 +40,13 @@ def test_csv_keeps_full_precision() -> None:
 
 
 def test_no_habitable_attic_leaves_the_cell_empty() -> None:
-    """NaN reaches the CSV where no attic is habitable. It goes out as an empty
-    cell, not the text "nan", which a spreadsheet would read as a string and turn
-    the whole numeric column into text."""
+    """NaN goes out as an empty cell, so the column stays numeric."""
     unusable = replace(ROW, usable_area_m2=0.0, eur_per_usable_m2=float("nan"))
     assert to_csv.render_csv([unusable]).splitlines()[1].endswith(",")
 
 
 def test_write_csv_is_render_csv_on_disk(tmp_path: Path) -> None:
-    """The split exists so a caller with nowhere to write can still have the
-    numbers; the two must not drift."""
+    """`write_csv` writes exactly what `render_csv` returns."""
     path = tmp_path / "sweep.csv"
     to_csv.write_csv([ROW], path)
     assert path.read_text(encoding="utf-8") == to_csv.render_csv([ROW])

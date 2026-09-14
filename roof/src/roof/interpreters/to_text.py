@@ -1,8 +1,4 @@
-"""Sweep rows → a fixed-width table for a terminal.
-
-English column names and a plain decimal point: this is the developer-facing
-view. The Slovak report is `to_html`.
-"""
+"""Sweep rows → a plain English table for the terminal."""
 
 import math
 from collections.abc import Sequence
@@ -11,7 +7,6 @@ from dataclasses import astuple
 from roof.core.sweep import SweepRow, column_names
 
 PLACES = 2
-"""Decimals shown. The full-precision record is the CSV, not this."""
 
 
 def _cell(value: float) -> str:

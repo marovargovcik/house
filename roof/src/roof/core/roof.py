@@ -1,4 +1,4 @@
-"""Gable roof geometry and ballpark cost. Pure — see `docs/spec.md` §3a."""
+"""Gable roof geometry and cost. Pure."""
 
 import math
 from dataclasses import dataclass
@@ -27,13 +27,8 @@ def rafter_length(house: HouseSpec, roof: RoofSpec) -> float:
 
 
 def surface_area(house: HouseSpec, roof: RoofSpec) -> float:
-    """Total roof surface, both planes.
-
-    The eave overhang joins the `width` factor because it continues the slope and
-    so is stretched by `1 / cos θ`; the gable overhang joins the `length` factor
-    because it runs horizontally along the ridge. Wiring the two the other way
-    round still produces a plausible-looking number — see `docs/decisions.md`.
-    """
+    """Both roof planes. The eave overhang follows the slope, so `1 / cos θ`
+    stretches it; the gable overhang runs along the ridge, so it doesn't."""
     return (
         (house.length + 2 * roof.overhang_gable)
         * (house.width + 2 * roof.overhang_eave)
@@ -42,13 +37,8 @@ def surface_area(house: HouseSpec, roof: RoofSpec) -> float:
 
 
 def gutter_run(house: HouseSpec, roof: RoofSpec) -> float:
-    """Gutter (odkvapový žľab) length along both eaves.
-
-    A horizontal line at the eave, so unlike the roof surface it does not grow
-    with pitch. Reported for ordering, not for costing — gutters are inside the
-    all-in rate. Downpipes (zvody) are not modelled: they need an eave height,
-    which is outside this module.
-    """
+    """Gutter (odkvapový žľab) length along both eaves; pitch doesn't change it.
+    For ordering, not costing. Downpipes (zvody) are not modelled."""
     return 2 * (house.length + 2 * roof.overhang_gable)
 
 
@@ -62,11 +52,5 @@ def geometry(house: HouseSpec, roof: RoofSpec) -> RoofGeometry:
 
 
 def cost(geom: RoofGeometry, costs: CostSpec) -> float:
-    """Ballpark cost of the roof: one all-in rate on gross surface area.
-
-    Gross means the overhang is charged too — a deliberate over-estimate in the
-    budgeting-safe direction (`docs/decisions.md`). Gutters live inside the rate,
-    so `gutter_run` is geometry for ordering material now, like `rafter_length`,
-    and no longer a cost input.
-    """
+    """The all-in rate on gross area, overhangs included."""
     return geom.surface_area * costs.eur_per_m2

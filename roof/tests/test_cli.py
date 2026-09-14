@@ -1,9 +1,4 @@
-"""The entry point is the whole input surface, so pin what that promises.
-
-The promise is that nothing is assumed on your behalf: every sweep input has to
-be typed, so no figure can reach a report by being inherited from a default
-nobody looked at.
-"""
+"""Every sweep input must be typed; nothing falls back to a default."""
 
 import sys
 
@@ -11,8 +6,7 @@ import pytest
 
 from roof import cli
 
-# One complete invocation. Deliberately not the current design — these tests
-# check the parser, and README.md is where the design's own numbers live.
+# A complete invocation for the parser, not the current design.
 FULL = [
     "--widths", "9", "11",
     "--length", "25",
@@ -62,8 +56,7 @@ def test_a_complete_invocation_parses() -> None:
 
 @pytest.mark.parametrize("flag", REQUIRED_FLAGS)
 def test_dropping_any_input_is_an_error(flag: str) -> None:
-    """No input may quietly fall back to a value nobody chose — including `--knee`,
-    where 0 is the current design rather than a safe blank."""
+    """No input has a default, `--knee` included."""
     with pytest.raises(SystemExit):
         cli.build_parser().parse_args(_without(flag))
 
@@ -71,10 +64,7 @@ def test_dropping_any_input_is_an_error(flag: str) -> None:
 def test_zero_is_how_the_collar_flag_says_there_is_none(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """A required flag cannot also be omitted, so 0 stands in for absence — and
-    the translation to `None` must happen at this boundary, since `AtticSpec`
-    rejects a collar sitting at or below the wall top.
-    """
+    """`--collar 0` means none; a negative collar fails with the spec's message."""
     monkeypatch.setattr(sys, "argv", ["house", *FULL])
     cli.main()
     assert "klieština musí byť najmenej" not in capsys.readouterr().out
@@ -88,8 +78,7 @@ def test_zero_is_how_the_collar_flag_says_there_is_none(
 def test_an_invalid_value_exits_with_the_specs_own_message(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """The spec constructors are the validation boundary and already say what is
-    wrong, so a bad flag must surface as that message, not as a traceback."""
+    """A bad flag exits 2 with the spec's message, not a traceback."""
     monkeypatch.setattr(sys, "argv", ["house", *_without("--h-min"), "--h-min", "-1"])
 
     with pytest.raises(SystemExit) as exit_info:

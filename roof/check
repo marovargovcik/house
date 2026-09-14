@@ -9,13 +9,10 @@ failed=0
 uv run ruff format --check . || { echo "  -> fix: uv run ruff format ."; failed=1; }
 uv run ruff check .          || { echo "  -> fix: uv run ruff check --fix ."; failed=1; }
 uv run mypy .                || failed=1
-# The pinning tests are the deliverable here, so a broken number must not
-# pass the gate that the docs call "all gates".
 uv run pytest -q             || failed=1
 
-# The browser page gets the same treatment as the Python: lint, format check,
-# and types. Skipped loudly, not silently, when node_modules is absent — it is
-# the one gate needing an install that `uv sync` does not do.
+# Browser page: lint, format, types. Skipped loudly without node_modules,
+# which `uv sync` doesn't install.
 if [[ -d web/node_modules ]]; then
   npm --prefix web run --silent check \
     || { echo "  -> fix: npm --prefix web run format, then re-check"; failed=1; }

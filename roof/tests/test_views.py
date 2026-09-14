@@ -1,10 +1,4 @@
-"""Hand-checked coordinates for the drawing geometry (`docs/spec.md` §3).
-
-These are numeric outputs like any other, so they are pinned the same way. The
-picture is only trustworthy if its points are — and since the drawing is what
-shows *why* the usable strip is as narrow as it is, the finished floor and
-ceiling matter here as much as the structure does.
-"""
+"""Hand-checked coordinates for the drawings."""
 
 import math
 
@@ -43,11 +37,7 @@ def test_45_degrees_puts_the_apex_at_half_the_width() -> None:
 
 
 def test_eave_overhang_descends_below_the_wall_top() -> None:
-    """The overhang continues the slope outward, so it drops 0.6·tan30° ≈ 0.346 m.
-
-    Drawing it level with the wall top is the plausible-looking mistake this
-    pins against.
-    """
+    """The overhang continues the slope, dropping 0.6·tan30° ≈ 0.346 m."""
     section = views.section(HOUSE, RoofSpec(pitch_deg=30.0, **OVERHANGS), BARE)
     left, right = section.eave_outer
     assert left == pytest.approx(Point(-5.1, -0.6 * math.tan(math.radians(30.0))))
@@ -55,12 +45,8 @@ def test_eave_overhang_descends_below_the_wall_top() -> None:
 
 
 def test_finished_surfaces_sit_inside_the_structure() -> None:
-    """At 30° the ceiling hangs 0.3464 m below the roof plane and the floor sits
-    0.20 m above the wall top, so the drawing can show what eats the headroom.
-
-    The ceiling is a *parallel* plane: its apex drops by the same vertical amount
-    its eaves do, which is what makes the band between the two lines uniform.
-    """
+    """At 30° the ceiling is 0.3464 m below the roof plane, parallel to it; the
+    floor is 0.20 m above the wall top."""
     section = views.section(HOUSE, RoofSpec(pitch_deg=30.0, **OVERHANGS), BUILT)
     drop = 0.30 / math.cos(math.radians(30.0))
 
@@ -71,13 +57,8 @@ def test_finished_surfaces_sit_inside_the_structure() -> None:
 
 
 def test_standing_room_stands_on_the_floor_and_stops_at_the_ceiling() -> None:
-    """9 m at 30°: a 0.5254 m base on the finished floor at 0.20 m, corners at
-    2.10 m (= floor + h_min) sitting exactly on the ceiling plane, apex at
-    2.2517 m.
-
-    The base is `usable_width` and the corners are on the ceiling — that pairing
-    is the whole claim the drawing makes.
-    """
+    """9 m at 30°: 0.5254 m base on the floor at 0.20 m, corners at 2.10 m on the
+    ceiling, apex at 2.2517 m."""
     section = views.section(HOUSE, RoofSpec(pitch_deg=30.0, **OVERHANGS), BUILT)
     assert section.standing_room is not None
     base_left, base_right, right, apex, left = section.standing_room
@@ -92,11 +73,7 @@ def test_standing_room_stands_on_the_floor_and_stops_at_the_ceiling() -> None:
 
 
 def test_a_collar_caps_the_standing_room_flat() -> None:
-    """A collar 2.5 m above the wall top cuts the peak off: the region runs up the
-    ceiling to 2.5 m, then straight across between the collar's ends at ±1.5757 m.
-
-    Leaving the apex in would draw standing room where a beam is.
-    """
+    """A collar at 2.5 m cuts the peak off flat between ±1.5757 m."""
     kneed = AtticSpec(
         h_min=1.9,
         roof_buildup=0.30,
@@ -136,8 +113,7 @@ def test_knee_wall_lifts_the_apex_and_the_springing_point() -> None:
 
 
 def test_a_ceiling_below_h_min_leaves_nothing_to_draw() -> None:
-    """9 m at 25° clears only 1.5674 m at the ridge, so section and plan both
-    come back empty — the case the bare-structure model drew a strip for."""
+    """9 m at 25° clears only 1.5674 m, so there is nothing to draw."""
     roof = RoofSpec(pitch_deg=25.0, **OVERHANGS)
     section = views.section(HOUSE, roof, BUILT)
     assert section.headroom_line is None

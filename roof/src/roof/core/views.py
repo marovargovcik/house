@@ -1,14 +1,8 @@
-"""Orthographic views of the gable roof (sedlová strecha), in metres.
+"""Drawing coordinates in metres, from the same functions as the table. Pure.
 
-Pure — see `docs/spec.md` §3. These are the coordinates a drawing is made of,
-which makes them numbers like any other: they come from the same
-`roof.ridge_height` and `attic.usable_width` the sweep table uses, so a picture
-and the row printed beside it cannot drift apart.
+Both frames are centred on the house:
 
-Two frames, each centred on the house so a renderer never needs the footprint to
-place anything:
-
-- section (priečny rez): `x` across the width, `y` up from the wall top (datum 0)
+- section (priečny rez): `x` across the width, `y` up from the wall top
 - plan (pôdorys): `x` along the length, `y` across the width
 """
 
@@ -40,15 +34,10 @@ class Rect:
 
 @dataclass(frozen=True, slots=True)
 class SectionGeometry:
-    """Gable-end section. Origin is the centre of the wall top.
+    """Gable-end section; origin at the centre of the wall top.
 
-    Carries the structure *and* the finished surfaces, because they are not the
-    same line and the difference is what headroom is made of: `apex` is the
-    structural ridge, `ceiling` is the plane you would actually hit, `floor` sits
-    above the wall top by the floor build-up.
-
-    `knee_top` is where the slopes spring from; with no knee wall it coincides
-    with `wall_top`, which is why the renderer needs no separate no-knee case.
+    `apex` is the structure, `ceiling` and `floor` the finished surfaces. With no
+    knee wall, `knee_top` equals `wall_top`.
     """
 
     apex: Point
@@ -76,9 +65,7 @@ def section(house: HouseSpec, roof: RoofSpec, attic: AtticSpec) -> SectionGeomet
     half_width = house.width / 2
     knee = attic.knee_height
     slope = math.tan(math.radians(roof.pitch_deg))
-    # The slopes spring from the top of the knee wall and the eave overhang
-    # continues them outward and *down* — so with no knee wall the eave sits
-    # below the wall top, not level with it.
+    # The eave overhang continues the slope down, below the knee top.
     eave_x = half_width + roof.overhang_eave
     eave_y = knee - roof.overhang_eave * slope
 
@@ -107,12 +94,7 @@ def section(house: HouseSpec, roof: RoofSpec, attic: AtticSpec) -> SectionGeomet
 def _collar(
     house: HouseSpec, roof: RoofSpec, attic: AtticSpec, drop: float
 ) -> tuple[Point, Point] | None:
-    """Where the collar tie (klieština) meets the finished ceiling, if there is one.
-
-    Half-span comes from reading the ceiling plane backwards at the collar's
-    height. A collar sitting at or above the ceiling apex has no span to draw —
-    it would not be a collar.
-    """
+    """Where the collar tie (klieština) meets the ceiling; `None` if it doesn't."""
     if attic.collar_above_wall_top is None:
         return None
     height = attic.collar_above_wall_top
@@ -141,13 +123,8 @@ def _standing_room(
     ceiling_apex: Point,
     ceiling_ends: tuple[Point, Point],
 ) -> tuple[Point, ...] | None:
-    """The cross-section you can actually stand in.
-
-    Floor strip up to `h_min`, then the finished ceiling on to the ridge — capped
-    flat by the collar where there is one, because you walk into a collar the
-    same way you walk into a ceiling. Its base is exactly `usable_width`, so the
-    shape on the drawing and the number in the table are one fact drawn twice.
-    """
+    """The region you can stand in: base `usable_width`, up to `h_min`, then the
+    ceiling, capped flat by a collar."""
     usable = attic_calc.usable_width(house, roof, attic)
     if usable <= 0:
         return None
@@ -155,9 +132,8 @@ def _standing_room(
     top = floor_y + attic.h_min
     collar = _collar(house, roof, attic, attic_calc.ceiling_drop(roof, attic))
 
-    # Right to left along the top. A knee wall tall enough that the ceiling
-    # already clears h_min at the wall turns the corner at the ceiling's ends
-    # instead of on the slope.
+    # Right to left along the top. If the ceiling clears h_min at the wall, the
+    # corners are the ceiling's ends.
     upper: list[Point] = []
     turns_at_the_wall = ceiling_ends[1].y - floor_y > attic.h_min
     if turns_at_the_wall:

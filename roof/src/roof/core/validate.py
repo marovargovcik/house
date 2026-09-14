@@ -1,19 +1,6 @@
-"""Cross-spec input checks. Pure — builds every spec the sweep will, and reports.
+"""Input combinations no single spec can see. Pure; returns problems, never raises.
 
-Each spec validates its own fields in `__post_init__`, which is where a value
-that is nonsense on its own belongs. But a value can be perfectly sensible and
-still be impossible *in combination*: 2.4 m above the wall top is a fine collar
-tie, 25° on a 9 m house is a fine roof, and there is no such roof with such a
-collar in it. Neither spec can see that, because neither can see the other.
-
-Problems are **returned**, not raised. A single bad field makes the value itself
-unusable, so the constructor refuses it; a bad *combination* is a fact about the
-run, and the entry point is what decides that a run stops. Returning them also
-keeps this testable by assertion rather than by exception.
-
-Not checked here, deliberately: a pitch too shallow to stand under, and a collar
-too low to clear `h_min`. Those are answers the model already reports — 0 usable
-width, NaN per m², and the collar note on the page — not bad input.
+A pitch too shallow to stand under or a collar too low are results, not problems.
 """
 
 from collections.abc import Sequence
@@ -24,13 +11,7 @@ from roof.core.specs import AtticSpec, HouseSpec, RoofSpec
 
 
 def collar_fits(house: HouseSpec, roof: RoofSpec, attic: AtticSpec) -> bool:
-    """Whether the collar tie is low enough to be in this roof at all.
-
-    It ties two opposing rafters, so it has to meet the finished ceiling on both
-    sides — which means sitting below the ceiling's apex. Above it there is
-    nothing to tie, and nothing catches that on its own: `views` quietly draws no
-    collar and the sweep prices an attic that is supposed to have one.
-    """
+    """Whether the collar sits below the finished ceiling's apex, with rafters to tie."""
     if attic.collar_above_wall_top is None:
         return True
     ceiling_apex = (
@@ -49,13 +30,7 @@ def sweep_problems(
     overhang_eave: float,
     overhang_gable: float,
 ) -> tuple[str, ...]:
-    """Everything wrong with these inputs that no single spec can see.
-
-    Takes the sweep's own arguments so the entry point checks exactly what it is
-    about to run, and constructs every spec the sweep will — so a field that is
-    nonsense on its own raises from here, before anything is swept, and
-    `sweep.width_by_pitch` can trust what it is handed.
-    """
+    """Builds every spec the sweep will, so a bad field raises here, before the run."""
     combinations = [
         (
             HouseSpec(width=width, length=length),

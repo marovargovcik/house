@@ -1,4 +1,4 @@
-"""The sweep is plumbing over pinned functions — check the wiring, not the math."""
+"""The sweep wires pinned functions together; check the wiring."""
 
 import math
 
@@ -11,14 +11,8 @@ COSTS = CostSpec(eur_per_m2=110.0)
 
 
 def test_row_matches_the_hand_checked_case_and_flags_unusable_pitches() -> None:
-    """The 9 m / 30° row must reproduce the values pinned in the unit tests, and
-    the 20° row (ceiling below h_min) must carry NaN rather than a ranking-beating
-    zero-division artefact.
-
-    `clear_ridge_m` is here to catch the two ridge figures being crossed: the
-    structural one is what a height limit measures, the clear one is what you
-    stand under, and they differ by half a metre.
-    """
+    """9 m / 30° matches the unit tests; 20° has no usable area and NaN per m².
+    `clear_ridge_m` catches the two ridge figures being swapped."""
     rows = sweep.width_by_pitch(
         widths=[9.0],
         pitches_deg=[20.0, 30.0],
@@ -50,9 +44,7 @@ def test_row_matches_the_hand_checked_case_and_flags_unusable_pitches() -> None:
 
 
 def test_knee_wall_raises_the_reported_ridge_by_its_own_height() -> None:
-    """A knee wall buys attic area, but not for free: the roof springs from its
-    top, so the ridge rises with it. Reporting the slope rise alone would read as
-    "free area" against a height limit."""
+    """A knee wall raises the reported ridge by its own height."""
 
     def row(knee: float) -> sweep.SweepRow:
         rows = sweep.width_by_pitch(

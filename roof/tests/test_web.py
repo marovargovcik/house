@@ -1,14 +1,4 @@
-"""`roof.web` — the browser entry point. Composition, not new arithmetic.
-
-Every number it returns is already pinned by `test_sweep`, `test_csv` and
-`test_to_html`; what is untested elsewhere is the wiring. So this checks the two
-things only this module decides: that a good run returns exactly what the
-interpreters produce, and that a refused run returns the reason and *nothing
-else* — from both halves of the validation rule.
-
-Pyodide is not exercised here. It is CPython 3.14, the same interpreter these
-tests run on, which is the whole reason the browser build needs no shims.
-"""
+"""The browser entry point's wiring, and the page's links to the Python."""
 
 import json
 import re
@@ -64,13 +54,7 @@ def test_renders_exactly_what_the_interpreters_produce() -> None:
 
 
 def test_zero_and_blank_both_mean_no_collar_tie() -> None:
-    """The web accepts `0` for absence exactly as `--collar 0` does.
-
-    The CLI has no choice about the convention — a required flag cannot also be
-    omitted — but a form can express absence as an empty field. It accepts both
-    so that a number that works on the command line is not an error in the
-    browser; `core.specs.collar_from_input` is the single place that decides.
-    """
+    """Empty and 0 both mean no collar, as `--collar 0` does."""
     blank = json.loads(web.report(json.dumps(INPUTS | {"collar_above_wall_top": None})))
     zero = json.loads(web.report(json.dumps(INPUTS | {"collar_above_wall_top": 0})))
 
@@ -86,11 +70,7 @@ def test_a_spec_that_raises_is_reported_and_nothing_is_computed() -> None:
 
 
 def test_a_cross_spec_problem_is_reported_the_same_way() -> None:
-    """The half no single spec can see — a collar that only a pitch rules out.
-
-    3.0 m clears the knee wall, so `AtticSpec` accepts it; it is the 30° roof at
-    9 m that has no ceiling left up there, and only `validate` can see that.
-    """
+    """3.0 m clears the knee wall, but the 9 m / 30° roof has no ceiling up there."""
     result = json.loads(
         web.report(
             json.dumps(INPUTS | {"knee_height": 0.5, "collar_above_wall_top": 3.0})
@@ -102,16 +82,8 @@ def test_a_cross_spec_problem_is_reported_the_same_way() -> None:
 
 
 def test_the_page_lists_every_module_it_has_to_load() -> None:
-    """`web/scripts/runtime.js` names the modules to fetch; nothing else keeps that honest.
-
-    The page copies `src/roof/` into Pyodide by hand, from a list, because a
-    static server offers no way to enumerate a directory. So a module added to
-    the core is invisible to the browser until someone edits that list — and the
-    failure is an `ImportError` on page load, far from the change that caused it.
-    TypeScript cannot see this: the paths are strings, and the files are Python.
-
-    `cli.py` is the one deliberate omission — the browser has a form instead.
-    """
+    """`runtime.js` lists the modules to load; a missing one only fails in the
+    browser. `cli.py` is left out on purpose."""
     source = (ROOT / "web" / "scripts" / "runtime.js").read_text()
     block = re.search(r"const MODULES = \[(.*?)\];", source, re.DOTALL)
     assert block is not None, (
@@ -131,16 +103,7 @@ def test_the_page_lists_every_module_it_has_to_load() -> None:
 
 
 def test_the_import_map_points_at_a_file_that_exists() -> None:
-    """`tsc` resolves `"pyodide"` from node_modules; the browser cannot.
-
-    The module says `import { loadPyodide } from "pyodide"`, and a bare specifier
-    means nothing to a browser — `web/index.html` carries an import map that
-    turns it into a path. Only that path can 404, only in the browser, and only
-    at page load, so the type checker will never notice it going stale.
-
-    Skipped when `web/node_modules` is absent: it is gitignored, and `uv sync`
-    does not create it.
-    """
+    """A stale import map only fails in the browser. Skipped without node_modules."""
     web = ROOT / "web"
     if not (web / "node_modules").exists():
         pytest.skip("web/node_modules is absent — run `npm --prefix web install`")
@@ -158,14 +121,7 @@ def test_the_import_map_points_at_a_file_that_exists() -> None:
 
 
 def test_every_export_is_imported_somewhere() -> None:
-    """Nothing under `web/` is exported that no other module asks for.
-
-    `tsc` catches the opposite direction — `noUnusedLocals` rejects an import
-    nobody uses — but an *export* nobody imports is invisible to it: it is a
-    legitimate public API as far as the type checker is concerned. In a page with
-    no consumers outside itself, it is dead weight, and it quietly widens a
-    module's surface past what it actually promises.
-    """
+    """No export under `web/` goes unused; `tsc` only catches unused imports."""
     scripts = sorted(
         path
         for path in (ROOT / "web").rglob("*.js")
@@ -180,12 +136,11 @@ def test_every_export_is_imported_somewhere() -> None:
         for name in block.split(",")
         if name.strip()
     }
-    # Without this the test passes by finding nothing at all, which is exactly
-    # what happened when the modules moved their exports to the end of the file.
+    # Otherwise a changed export style passes by finding nothing.
     assert exported, "no exports found — has the export style changed?"
     imported = set()
     for path in scripts:
-        # Collapsed, because a wrapped import spans lines once oxfmt has been at it.
+        # Collapsed: oxfmt wraps long imports across lines.
         flat = " ".join(path.read_text().split())
         for pattern in (
             r'import \{([^}]*)\} from "([^"]+)"',

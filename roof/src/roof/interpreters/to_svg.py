@@ -1,10 +1,7 @@
-"""Roof views → SVG. An interpreter: string building only, no IO.
+"""Roof views → SVG strings.
 
-Every card is drawn at the same `SCALE` and each `<svg>` is emitted at its
-natural size rather than stretched to fit its box. That is the whole point of
-the page: an 11 m house has to *look* wider than a 9 m one and a 25° pitch has
-to look shallower than a 45° one, or the drawing adds nothing the table did not
-already say.
+Every card uses the same `SCALE` at natural size, never fit-to-box, so sizes and
+pitches compare by eye.
 """
 
 import math
@@ -18,7 +15,7 @@ from roof.core.views import Point, Rect
 from roof.interpreters import sk
 
 SCALE = 26.0
-"""Pixels per metre, shared by every card — see the module docstring."""
+"""Pixels per metre, shared by every card."""
 
 _TICK = 0.13
 """Half-length of a dimension line's end tick, in metres."""
@@ -27,13 +24,7 @@ _ARC_RADIUS = 0.9
 """Radius of the pitch-angle arc, in metres."""
 
 _LABEL_CLEARANCE = 0.5
-"""Metres the pitch label keeps clear of the rafter it measures.
-
-The angle wedge is narrow near the eave and narrower still at a shallow pitch,
-so a label pinned to the arc lands on the rafter. Holding the *clearance*
-constant and solving for the distance instead pushes the label out exactly as
-far as the pitch requires.
-"""
+"""Metres between the pitch label and its rafter; shallow pitches push it out."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,11 +118,7 @@ def _dim_v(f: _Frame, y0: float, y1: float, x: float, label: str) -> str:
 
 
 def _pitch_arc(f: _Frame, spring: Point, pitch_deg: float) -> str:
-    """Angle between the horizontal and the slope, marked at the right eave.
-
-    On the right because the eave-overhang dimension already occupies the left,
-    and at this scale the two labels sit on top of each other.
-    """
+    """Pitch angle at the right eave; the left has the overhang dimension."""
     theta = math.radians(pitch_deg)
     start = Point(spring.x - _ARC_RADIUS, spring.y)
     end = Point(
@@ -166,9 +153,7 @@ def _section_panel(
     eave_x = sec.eave_outer[1].x
     floor_y = sec.floor[0].y
     ceiling_apex = sec.ceiling[1]
-    # Taken from the core rather than measured off the ceiling apex, so the arrow
-    # stops where a collar caps it and the label is the table's `clear_ridge_m`
-    # by construction rather than by coincidence.
+    # From the core, so it stops at a collar and matches `clear_ridge_m`.
     clear_ridge = attic_calc.clear_ridge_height(house, roof, attic)
     frame = _Frame(
         x_min=-eave_x - 2.7,
@@ -181,9 +166,7 @@ def _section_panel(
     if sec.standing_room is not None:
         parts.append(_polygon(frame, sec.standing_room, "usable"))
     parts += [
-        # The band between the roof plane and the finished ceiling is the
-        # headroom the rafters and insulation take; drawing it is the whole
-        # point of separating the two lines.
+        # Roof plane to ceiling: the headroom the build-up takes.
         _polygon(
             frame,
             (
@@ -204,9 +187,7 @@ def _section_panel(
         _line(frame, sec.knee_top[1], sec.eave_outer[1], "roof overhang"),
         _polyline(frame, sec.ceiling, "ceiling"),
         _line(frame, sec.floor[0], sec.floor[1], "floor"),
-        # Drawn even when the ceiling never reaches it: a dashed line floating
-        # above the apex is the clearest possible statement of why the attic is
-        # unusable at this pitch.
+        # Drawn even above the apex: that shows why the attic is unusable.
         _line(
             frame,
             Point(-half_width, floor_y + attic.h_min),
@@ -347,8 +328,7 @@ def card_svg(house: HouseSpec, roof: RoofSpec, attic: AtticSpec) -> str:
     plan_frame, plan = _plan_panel(house, roof, attic)
     width = sec_frame.width_px + gap + plan_frame.width_px
     height = max(sec_frame.height_px, plan_frame.height_px)
-    # Both panels sit on the bottom edge so the sections in a row of cards share
-    # a baseline and their ridge heights can be compared by eye.
+    # Bottom-aligned, so ridge heights compare across a row of cards.
     return (
         f'<svg class="drawing" width="{width:.0f}" height="{height:.0f}" '
         f'viewBox="0 0 {width:.0f} {height:.0f}" '
@@ -361,11 +341,7 @@ def card_svg(house: HouseSpec, roof: RoofSpec, attic: AtticSpec) -> str:
 
 
 def defs_svg() -> str:
-    """Arrowhead and hatch definitions, emitted once for the whole page.
-
-    Inline SVGs share the host document's single ID space, so repeating these
-    per card would put a dozen elements with the same id in the page.
-    """
+    """Arrowhead and hatch, once per page: inline SVGs share one id space."""
     return (
         '<svg class="defs" width="0" height="0" xmlns="http://www.w3.org/2000/svg">'
         "<defs>"
@@ -383,9 +359,8 @@ STYLE = """
 .defs { position: absolute; }
 #arrow path { fill: var(--dim); }
 #hatch line { stroke: var(--usable); stroke-width: 2.5; }
-/* The class rules below are all qualified with `.drawing` so they outrank this
-   reset. Written bare they lose to it on specificity and every fill silently
-   vanishes — including the hatch that is the whole point of the drawing. */
+/* Rules below are qualified with `.drawing` to outrank this reset; bare, the
+   fills vanish. */
 .drawing line, .drawing polyline, .drawing polygon, .drawing rect, .drawing path {
   fill: none; stroke-linecap: round; stroke-linejoin: round;
 }

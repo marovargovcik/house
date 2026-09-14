@@ -1,26 +1,7 @@
-"""The browser build: the sweep the page runs, and the server that hands it over.
+"""Browser entry point.
 
-Split the way every interpreter here is split — `render_html` / `write_html`,
-`render_csv` / `write_csv` — with the pure half first and the effect at the very
-edge:
-
-- `report()` is **pure**: JSON in, rendered strings out, no IO. This is what runs
-  *inside* the browser, where there is nowhere to write anyway, and it is
-  testable on CPython exactly as the core is (`tests/test_web.py`).
-- `main()` is the effect: `uv run web` serves the page and opens it. It never
-  runs in the browser — Pyodide imports this module and calls `report`.
-
-The counterpart to `roof.cli`, and deliberately the *only* Python the browser
-build adds. Pyodide is CPython 3.14 — the same interpreter `uv run cli` uses — so
-`src/roof/` is loaded verbatim, with no transform, no shims and no compatibility
-layer. That is the whole reason this file is short.
-
-Where it differs from `cli.py`:
-
-- **No `argparse`.** The form is the parser.
-- **Two spellings of "no collar tie".** An empty field arrives as `null`, and 0
-  is accepted for the same thing, so a number that works on the command line is
-  not an error here. `core.specs.collar_from_input` is where that rule lives.
+`report` is pure (JSON in, JSON out) and runs inside Pyodide. `main` serves the
+page for `uv run web` and never runs in the browser.
 """
 
 import json
@@ -35,13 +16,9 @@ from roof.interpreters import to_csv, to_html, to_text
 
 
 def report(payload: str) -> str:
-    """`{"widths": [...], ...}` as JSON -> `{problems, table, csv, html}` as JSON.
+    """`{"widths": [...], ...}` -> `{problems, table, csv, html}`, both as JSON.
 
-    `problems` non-empty means the run was **refused** and the three renderings
-    are empty — nothing was computed, so there is nothing to show. Validation
-    follows the same rule as `cli.py`: a spec raises because a field is unusable
-    on its own, `validate` returns because a combination is only nonsense
-    together, and this entry point is what decides a run stops.
+    Non-empty `problems` means the run was refused and the rest is empty.
     """
     args = json.loads(payload)
     try:
@@ -90,26 +67,19 @@ def _refused(problems: list[str]) -> str:
 
 
 PORT = 8000
-"""Fixed rather than picked: a stable URL survives a restart, and the one way it
-can fail — something else already on 8000 — says so plainly."""
 
 
 def main() -> None:
-    """Serve the project root (`roof/`) at `/web/` and open it. `uv run web`.
+    """Serve `roof/` and open `/web/`.
 
-    The **project root**, not `web/`: the page fetches `../src/` so that editing a
-    core module and reloading is the whole loop, which means the served tree has
-    to contain both. Serving `web/` alone 404s every module.
-
-    Threaded because the page requests all fifteen modules at once, and a
-    single-threaded handler answers them one connection at a time.
+    The project root, not `web/`, because the page fetches `../src/`. Threaded
+    because the page fetches every module at once.
     """
     root = Path(__file__).resolve().parent.parent.parent
     url = f"http://127.0.0.1:{PORT}/web/"
     handler = partial(SimpleHTTPRequestHandler, directory=str(root))
     with ThreadingHTTPServer(("127.0.0.1", PORT), handler) as server:
-        # Flushed: stdout is block-buffered when redirected, and this line is
-        # how you get in if the browser does not open on its own.
+        # Flushed so the URL shows even when stdout is redirected.
         print(f"serving {root} at {url}  (ctrl-c to stop)", flush=True)
         webbrowser.open(url)
         try:

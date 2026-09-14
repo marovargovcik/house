@@ -1,9 +1,5 @@
-"""Frozen input types for the roof/attic model.
-
-Validation lives here and nowhere else: these constructors are the system
-boundary, so the pure functions downstream can trust what they are handed. In
-particular `0 < pitch_deg < 90` is what keeps `tan` and `1 / cos` total for
-every caller, so no calculation needs its own guard.
+"""Frozen input types. Their constructors reject bad fields, so downstream trusts
+them — e.g. `0 < pitch_deg < 90` keeps `tan` and `1 / cos` safe everywhere.
 """
 
 import math
@@ -11,12 +7,7 @@ from dataclasses import dataclass
 
 
 def _is_positive(value: float) -> bool:
-    """Finite and above zero.
-
-    The `isfinite` half is the point: NaN compares False against everything, so a
-    bare `value <= 0` guard lets NaN through and it then poisons every downstream
-    number with no hint of where it entered.
-    """
+    """Finite and above zero. `isfinite` catches NaN, which `value <= 0` misses."""
     return math.isfinite(value) and value > 0
 
 
@@ -40,15 +31,8 @@ class HouseSpec:
 
 @dataclass(frozen=True, slots=True)
 class RoofSpec:
-    """Gable roof (sedlová strecha) geometry.
-
-    Both overhangs are horizontal projections, and they are *not*
-    interchangeable — see `docs/decisions.md`.
-
-    Neither carries a default. They are measured quantities that change the roof
-    area and the timber order, and a default would let one reach a result without
-    anyone choosing it — the same rule `AtticSpec` follows.
-    """
+    """Gable roof (sedlová strecha). Overhangs are horizontal projections, not
+    interchangeable, and have no defaults."""
 
     pitch_deg: float
     overhang_eave: float
@@ -71,29 +55,13 @@ class RoofSpec:
 
 @dataclass(frozen=True, slots=True)
 class AtticSpec:
-    """Headroom rule bounding habitable attic area (obytné podkrovie).
+    """Headroom rule for the habitable attic (obytné podkrovie). No defaults.
 
-    `h_min` is **clear** height — finished floor to finished ceiling — so the
-    build-ups that eat into it belong here as inputs rather than as a correction
-    someone remembers to apply later. Measuring to bare structure on both faces
-    is the mistake this type exists to make impossible.
-
-    - `h_min` — no default by decision, see `docs/decisions.md`.
-    - `roof_buildup` — thickness **perpendicular to the roof plane**: rafter
-      (krokva) depth, insulation, service cavity, lining. Perpendicular because
-      that is how rafters and insulation are specified; `attic.ceiling_drop`
-      converts it to the vertical loss that headroom actually feels.
-    - `floor_buildup` — **vertical** thickness of the attic floor above the wall
-      top: structure, insulation, screed, covering.
-    - `knee_height` — nadmurovka; the slopes spring from its top. 0 for none.
-    - `collar_above_wall_top` — underside of the collar tie (klieština) above the
-      wall top, or `None` for a roof with no collar. See `attic.usable_width`
-      for why this gates rather than reduces.
-
-    None of them defaults, `collar_above_wall_top` included: a roof with no collar
-    tie has to say `None` rather than leave it unsaid. The type stays a union
-    because absence is genuinely not a height — it is the entry point's job to
-    translate, not this one's.
+    - `h_min` — clear height, finished floor to finished ceiling.
+    - `roof_buildup` — krokvy, insulation, lining; perpendicular to the roof plane.
+    - `floor_buildup` — attic floor above the wall top; vertical.
+    - `knee_height` — nadmurovka; 0 for none.
+    - `collar_above_wall_top` — klieština underside, or `None` for none.
     """
 
     h_min: float
@@ -121,10 +89,8 @@ class AtticSpec:
                     "collar must sit above the wall top, got "
                     f"{self.collar_above_wall_top} m"
                 )
-            # The rafters spring from the knee top, so a collar at or below it
-            # has nothing to tie. Both fields live here, so this is a check the
-            # spec can make itself; a collar higher than the *roof* needs the
-            # width and pitch too, and lives in `core/validate.py`.
+            # Rafters spring from the knee top, so a collar at or below it ties
+            # nothing. A collar above the roof is `validate`'s check.
             if self.collar_above_wall_top <= self.knee_height:
                 raise ValueError(
                     "collar must sit above the knee wall the rafters spring "
@@ -134,35 +100,17 @@ class AtticSpec:
 
 
 def collar_from_input(value: float | None) -> float | None:
-    """Read a collar height as an entry point receives it: **0 means none**.
-
-    Both entry points need this and neither owns it. The CLI has no choice — a
-    required flag cannot also be omitted, so `--collar 0` is how it says "no
-    klieština". The web form could express absence as an empty field, and does,
-    but it accepts 0 for the same thing so that a number that works on the
-    command line does not become an error in the browser.
-
-    `AtticSpec` itself stays honest: absence is `None`, never a height, which is
-    what this converts to. It is the only place the convention lives.
-    """
+    """0 or `None` means no collar tie. Shared by both entry points."""
     return None if value is None or value == 0 else value
 
 
 @dataclass(frozen=True, slots=True)
 class CostSpec:
-    """One all-in rate for the whole roof, in EUR per m² of roof surface.
-
-    Covers everything the roof costs — krov, insulation, membrane, battens,
-    covering, gutters, labour — because that is how a builder quotes a roof, and
-    one number carries exactly the precision this model has. Charged on **gross**
-    area including the overhang, a deliberate over-estimate in the
-    budgeting-safe direction (`docs/decisions.md`).
-    """
+    """All-in EUR per m² of roof surface, charged on gross area."""
 
     eur_per_m2: float
 
     def __post_init__(self) -> None:
-        # Positive, not merely non-negative: a zero rate prices the entire roof
-        # at nothing and still prints a plausible-looking total.
+        # A zero rate would still print a plausible-looking total.
         if not _is_positive(self.eur_per_m2):
             raise ValueError(f"roof rate must be positive, got {self.eur_per_m2}")

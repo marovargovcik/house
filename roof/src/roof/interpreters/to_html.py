@@ -1,15 +1,4 @@
-"""Sweep rows → a self-contained HTML report in Slovak, one drawn card per row.
-
-The report is what goes to the projektant and the builders, so the whole page —
-prose, dimension labels, table headers, number formatting — is Slovak. The core
-stays in English: only this boundary translates (`CLAUDE.md`, units & vocabulary).
-
-Split in two: `render_html` builds the page and `write_html` puts it on disk, so
-a caller with nowhere to write can still have the page. Each card's drawing
-is rebuilt from that row's own `width_m` and `pitch_deg`, so the picture and the
-numbers printed beside it are the same configuration by construction — there is
-no second source of truth to fall out of step.
-"""
+"""Sweep rows → a self-contained Slovak HTML report, one drawn card per row."""
 
 import math
 from collections.abc import Iterable, Sequence
@@ -34,8 +23,6 @@ _COLUMNS: tuple[tuple[str, str, str], ...] = (
     ("total_eur", "cena spolu", "€"),
     ("eur_per_usable_m2", "cena za úžitkový m²", "€"),
 )
-"""Sweep columns as the report names them. One registry so a card panel, a table
-header, and a unit can never drift apart."""
 
 _PLACES = {"m": 2, "m²": 1, "°": 0, "%": 0, "€": 0}
 
@@ -44,25 +31,15 @@ _CARD_ROWS = tuple(row for row in _COLUMNS if row[0] not in {"width_m", "pitch_d
 
 
 def _number(unit: str, value: float) -> str:
-    """The bare figure, Slovak-formatted, with no unit attached.
-
-    NaN reaches here from `eur_per_usable_m2` where no attic is habitable — see
-    `sweep.width_by_pitch`. A dash keeps the row honest instead of printing a
-    stray `nan`.
-    """
+    """The figure without its unit; NaN (no usable attic) shows as a dash."""
     if math.isnan(value):
         return "—"
     return sk.fixed(value * 100 if unit == "%" else value, _PLACES[unit])
 
 
 def _with_unit(unit: str, value: float) -> str:
-    """Slovak spaces a unit off its number — except the degree sign.
-
-    A no-break space, so a figure and its unit never land on separate lines. It
-    is the wider U+00A0 rather than the U+202F used between thousands: that one
-    is deliberately tight enough to read as a group separator, which is exactly
-    what a unit gap must not look like.
-    """
+    """Figure and unit joined by a no-break space (wider than the thousands gap),
+    except `°`."""
     figure = _number(unit, value)
     if not unit or figure == "—":
         return figure
@@ -122,13 +99,7 @@ def _sections(
 
 
 def _collar_note(attic: AtticSpec) -> str:
-    """What the collar tie does to this sweep, stated either way.
-
-    Without one the useful figure is the constraint — the lowest a klieština can
-    sit and still leave `h_min` under it. With one, the page has to say whether
-    it clears, because a collar that does not zeroes every row and the drawings
-    would otherwise show that with no reason given.
-    """
+    """The lowest workable klieština, and whether the given one clears it."""
     lowest = sk.trimmed(attic_calc.min_collar_height(attic))
     if attic.collar_above_wall_top is None:
         return (
@@ -155,11 +126,7 @@ def _assumptions(
     overhang_eave: float,
     overhang_gable: float,
 ) -> str:
-    """Every input the cards are drawn and priced from, stated on the page.
-
-    A cost figure with no rate beside it is unreadable a month later, so the rate
-    travels with the report rather than living only in the entry point.
-    """
+    """Every input, stated on the page so the report reads on its own."""
     items: Iterable[str] = (
         f"dĺžka {sk.trimmed(length)} m",
         (
@@ -189,11 +156,7 @@ def _assumptions(
 
 
 def _table(rows: Sequence[SweepRow]) -> str:
-    """The sweep as a table, formatted exactly as the cards format it.
-
-    Headers carry the Slovak names and units from `_COLUMNS`, and the figures go
-    through the same formatter the cards use, so the two never disagree.
-    """
+    """The sweep as a table, formatted like the cards."""
     head = "".join(
         f"<th>{label}{f' ({unit})' if unit else ''}</th>" for _, label, unit in _COLUMNS
     )

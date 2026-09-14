@@ -50,8 +50,7 @@ const readPayload = () => {
     roof_buildup: Number(field("roof_buildup")),
     floor_buildup: Number(field("floor_buildup")),
     knee_height: Number(field("knee_height")),
-    // An empty field means there is no collar tie, which the CLI spells
-    // `--collar 0`.
+    // Empty means no collar tie (`--collar 0` on the CLI).
     collar_above_wall_top: collar === "" ? null : Number(collar),
     eur_per_m2: Number(field("eur_per_m2")),
   };
