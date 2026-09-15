@@ -52,14 +52,14 @@ DIG_FLAGS = (
 )
 
 LAYOUT = r"""
-the layout being tried now, run from terrain/:
+an example, run from terrain/:
 
   uv run view ../data/terrain.txt terrain.html --exaggeration 1 --section 5 \
-    --house-start 15 --house-offset 7 --house-length 25 --house-width 10 \
-    --lower-depth 9 --garage-floor 270.2 --lower-height 3.0 --upper-height 2.8 \
+    --house-start 20 --house-offset 7 --house-length 20 --house-width 10 \
+    --lower-depth 9 --garage-floor 271.0 --lower-height 3.0 --upper-height 2.8 \
     --pitch 25 --boundary-gap 2.5 \
     --shed-start 40 --shed-offset 7 --shed-depth 2.8 --shed-length 10 \
-    --shed-floor 273.2 --shed-height 2.5 --shed-boundary-gap 2 \
+    --shed-floor 274.0 --shed-height 2.5 --shed-boundary-gap 2 \
     --terrace-length 7 --terrace-width 3 --terrace-from-back 1 \
     --floor-buildup 0.5 --footing-width 0.6 --footing-depth 0.8 --working-space 0.8
 """

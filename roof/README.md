@@ -20,11 +20,11 @@ Run everything from `roof/`.
 ## Run it
 
 There are no defaults: you give every input, so no number gets in unchosen.
-The current design:
+For example, with the house's widths and length filled in:
 
 ```bash
 uv run cli --html roof.html \
-  --widths 10 --length 25 --pitches 25 30 35 40 45 \
+  --widths WIDTH... --length LENGTH --pitches 25 30 35 40 45 \
   --overhang-eave 0.6 --overhang-gable 0.4 \
   --h-min 1.9 --roof-buildup 0.30 --floor-buildup 0.20 --knee 0 --collar 0 \
   --eur-per-m2 110

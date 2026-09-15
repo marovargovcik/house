@@ -1,8 +1,7 @@
 # house
 
 Tools for planning a self-build house on a sloped plot near Trenčín. The house
-is a simple rectangle, 10 m wide and 25 m long, with the garage dug into the
-slope.
+is a simple rectangle with the garage dug into the slope.
 
 | Project | What it does |
 |---|---|

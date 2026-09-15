@@ -16,7 +16,7 @@ def build_parser() -> argparse.ArgumentParser:
     """Every sweep input as a required flag."""
     parser = argparse.ArgumentParser(
         description="Roof and attic sweep over width and pitch. "
-        "Every input is required — see README.md for the current design.",
+        "Every input is required — see README.md for an example.",
     )
     parser.add_argument(
         "csv_path",

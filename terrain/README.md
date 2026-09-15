@@ -19,10 +19,10 @@ shows how to run it.
 ## The house on the plot
 
 ```text
-                    north side: 2.5 m to the house
+                    north side
 road  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  east fence
         +-------------+---------------------------+------+
-        | garage      |        upper floor        | shed |  2.9 m
+        | garage      |        upper floor        | shed |
         | (below)     |                           |      |
         +-------------+-------------+-------------+------+
                                     |   terrace   |
@@ -31,11 +31,13 @@ road  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  east fence
         uphill ->
 ```
 
-- House 25 x 10 m, long side up the slope, front wall 15 m up from point 115.
-- Garage level 9 m deep, dug into the steep bank, floor at 270.2: two cars, a
-  utility room and the stairs.
-- Upper floor at 273.2, level with the ground about 33 m up.
-- Shed 10 x 2.8 m against the back wall, sharing it, floor at 273.2.
-- Terrace 7 x 3 m on the south side, facing point 24, 1 m short of the back wall.
+Every size, position and level is a flag.
+
+- House: a rectangle, long side up the slope, placed from point 115.
+- Garage level at the front, dug into the slope: two cars, a utility room and
+  the stairs.
+- Upper floor over the rest.
+- Shed against the back wall, sharing it.
+- Terrace on the south side, facing point 24, short of the back wall.
 - Excavation: pits with vertical sides, working space around the buried garage
   and shed walls, footings under outer walls only.
