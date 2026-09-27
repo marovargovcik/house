@@ -7,6 +7,7 @@ is a simple rectangle with the garage dug into the slope.
 |---|---|
 | [`roof/`](./roof/README.md) | Roof cost and usable attic area for a range of pitches |
 | [`terrain/`](./terrain/README.md) | A 3D view of the plot to rotate in a browser |
+| [`3d/`](./3d/general-rules.md) | Floor-plan ideas and their variants, in Slovak |
 
 ## Setup
 

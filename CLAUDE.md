@@ -20,10 +20,10 @@
 - In a fresh clone, run `git config core.hooksPath .githooks` — otherwise the
   pre-commit hook never runs.
 - Run Python through `uv run`; never activate a venv.
-- When code and docs disagree, the code is right — fix the doc.
-- `gsed`, not `sed`. Avoid `git -C` and `gh --repo`.
+- Avoid `git -C` and `gh --repo`.
 - Check the tests for usage examples.
 - Anything for the projektant or the builders is in Slovak.
+- Floor-plan work in `3d/`: read `3d/general-rules.md` first.
 
 ## Python — code structure
 

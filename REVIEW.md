@@ -1,8 +1,8 @@
 # Code Review
 
 Approve a change that makes the codebase healthier, even if it isn't perfect.
-This is a personal budgeting tool: the numbers and the purity boundary matter
-most; there is no attack surface.
+This repo holds everything explored for the house build: the numbers and the
+purity boundary matter most; there is no attack surface.
 
 ## Priority
 
