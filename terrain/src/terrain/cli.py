@@ -55,11 +55,11 @@ LAYOUT = r"""
 an example, run from terrain/:
 
   uv run view ../data/terrain.txt terrain.html --exaggeration 1 --section 2.5 \
-    --house-start 18.9 --house-offset 7.16 --house-length 20.15 --house-width 10.5 \
-    --lower-depth 9 --garage-floor 270.7 --lower-height 2.7 --upper-height 2.8 \
+    --house-start 20.53 --house-offset 7.12 --house-length 20.15 --house-width 10.5 \
+    --lower-depth 9 --garage-floor 270.9 --lower-height 2.7 --upper-height 2.8 \
     --pitch 35 --boundary-gap 2.5 \
-    --shed-start 39.05 --shed-offset 5.41 --shed-depth 2.8 --shed-length 7 \
-    --shed-floor 273.4 --shed-height 2.5 --shed-boundary-gap 2 \
+    --shed-start 40.68 --shed-offset 5.37 --shed-depth 2.8 --shed-length 7 \
+    --shed-floor 273.6 --shed-height 2.5 --shed-boundary-gap 2 \
     --terrace-length 7.5 --terrace-width 3 --terrace-from-back 0.66 \
     --floor-buildup 0.5 --footing-width 0.6 --footing-depth 0.8 --working-space 0.8
 """
