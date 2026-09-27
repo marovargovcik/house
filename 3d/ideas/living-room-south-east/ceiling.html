@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Living Room Ceiling</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --paper: #f5f6f3;
+  --panel: #ffffff;
+  --ink: #1d272b;
+  --muted: #5d6a6f;
+  --line: #d5dbd8;
+  --wall: #2a3438;
+  --living: #ecdcbf;
+  --rooms: #e3e8e6;
+  --attic: #c9d3d6;
+  --walk: #9fc3a0;
+  --glass: #2f6f9f;
+  --accent: #2f6f9f;
+  --roof: #7b5a44;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #141a1c;
+    --panel: #1c2427;
+    --ink: #e6ebe9;
+    --muted: #9aa7ab;
+    --line: #34403f;
+    --wall: #c9d2d0;
+    --living: #5a4a31;
+    --rooms: #2c3739;
+    --attic: #3a4a50;
+    --walk: #3f6a44;
+    --glass: #7fb6e0;
+    --accent: #7fb6e0;
+    --roof: #b88b6b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #141a1c;
+  --panel: #1c2427;
+  --ink: #e6ebe9;
+  --muted: #9aa7ab;
+  --line: #34403f;
+  --wall: #c9d2d0;
+  --living: #5a4a31;
+  --rooms: #2c3739;
+  --attic: #3a4a50;
+  --walk: #3f6a44;
+  --glass: #7fb6e0;
+  --accent: #7fb6e0;
+  --roof: #b88b6b;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.5 "IBM Plex Sans", system-ui, sans-serif;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 48px; display: grid; gap: 22px; }
+h1 { font-size: 26px; font-weight: 600; margin: 0; text-wrap: balance; }
+h2 { font-size: 15px; font-weight: 600; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 68ch; }
+.lead { color: var(--muted); }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: end; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+button { font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 500; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+label { display: grid; gap: 2px; font-size: 13px; color: var(--muted); min-width: 180px; }
+label span.v { color: var(--ink); }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.fact { display: grid; gap: 2px; }
+.fact b { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.fact small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.sections { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 820px) { .sections { grid-template-columns: 1fr; } }
+figure { margin: 0; display: grid; gap: 8px; }
+figcaption { color: var(--muted); font-size: 13px; }
+.svgbox { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow-x: auto; }
+.svgbox svg { display: block; width: 100%; min-width: 360px; height: auto; }
+svg text { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; fill: var(--ink); }
+svg text.lbl { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 14px; }
+svg text.mut { fill: var(--muted); }
+#view3d { position: relative; height: 480px; max-height: 70vh; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: #dfe7ea; }
+.note { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header style="display:grid;gap:6px">
+    <h1>Living room ceiling: one slope or a full A</h1>
+    <p class="lead">The whole house has an A roof with the ridge running west–east down the middle. The living room has no flat ceiling, so you see the roof from inside. Its depth (south to north) decides whether you see one slope or both.</p>
+  </header>
+
+  <div class="controls">
+    <div class="presets" role="group" aria-label="Ceiling type">
+      <button id="p-one" type="button">One slope</button>
+      <button id="p-full" type="button">Full A</button>
+    </div>
+    <label for="depth">Living room depth, south → north <span class="v mono" id="depth-v"></span>
+      <input id="depth" type="range" min="4" max="8" step="0.05" value="6.0">
+    </label>
+    <label for="width">House width, outside <span class="v mono" id="width-v"></span>
+      <input id="width" type="range" min="9.5" max="12" step="0.1" value="10.5">
+    </label>
+    <label for="pitch">Roof pitch <span class="v mono" id="pitch-v"></span>
+      <input id="pitch" type="range" min="25" max="45" step="1" value="35">
+    </label>
+  </div>
+
+  <div class="facts" id="facts"></div>
+
+  <div class="sections">
+    <figure>
+      <div class="svgbox"><svg id="secA" role="img" aria-label="Cross-section through the living room"></svg></div>
+      <figcaption>Cross-section through the living room, looking west. South (view, glazing) on the left, north (fence) on the right.</figcaption>
+    </figure>
+    <figure>
+      <div class="svgbox"><svg id="secB" role="img" aria-label="Cross-section through the rest of the house"></svg></div>
+      <figcaption>Cross-section through the rest of the house (bedrooms, bathrooms): flat ceiling, cold attic above. Green is where you can stand up in the attic (1,9 m or more).</figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <div id="view3d"></div>
+    <figcaption>Inside the living room, 55 m², so the south wall gets longer as the room gets shallower. The west wall is left out so you can see in. Drag to turn, scroll to zoom. The figure is 1,8 m tall.</figcaption>
+  </figure>
+
+  <p class="note">Rough: 2,7 m clear height under the flat ceilings, no knee wall, 0,3 m for the flat ceiling and its insulation, 0,44 m outside walls. Heights are to the finished inside of the roof.</p>
+</div>
+
+
+<script src="https://cdn.plot.ly/plotly-4.0.0.min.js"></script>
+<script>
+const H = 2.7, T = 0.44, CEIL = 0.3, PART = 0.15, AREA = 55, WALK = 1.9, OVER = 0.6, BUILD = 0.3;
+const $ = (id) => document.getElementById(id);
+const fmt = (n, d = 2) => n.toFixed(d).replace('.', ',');
+
+function geom() {
+  const W = +$('width').value, pitch = +$('pitch').value, d = +$('depth').value;
+  const tan = Math.tan(pitch * Math.PI / 180);
+  const r = W / 2 - T;                       // south inner face to the ridge
+  const under = (u) => H + Math.min(u, 2 * r - u) * tan;  // roof underside above a point u m north of the south inner face
+  const ridge = under(r);
+  const headroom = ridge - H - CEIL;
+  const walkW = Math.max(0, 2 * (r - (WALK + CEIL) / tan));
+  return { W, pitch, d, tan, r, under, ridge, headroom, walkW, full: d > r, L: AREA / d };
+}
+
+function facts(g) {
+  const items = [
+    [g.full ? 'Full A' : 'One slope', g.full ? `ridge ${fmt(g.d - g.r, 1)} m inside the room` : `wall ${fmt(g.r - g.d, 2)} m south of the ridge`],
+    [`${fmt(g.L, 1)} × ${fmt(g.d, 1)} m`, 'living room for 55 m² (south wall × depth)'],
+    [`${fmt(Math.min(g.L - 1.4, 10), 1)} m`, 'south glazing that fits'],
+    [`${fmt(H, 1)} → ${fmt(g.full ? g.ridge : g.under(g.d), 1)} m`, 'ceiling at the glazing → highest point'],
+    [`${fmt(g.headroom, 1)} m`, 'attic height at the ridge, rest of the house'],
+    [`${fmt(g.walkW, 1)} m`, 'attic strip you can stand in (1,9 m +)'],
+  ];
+  $('facts').innerHTML = items.map(([b, s]) => `<div class="fact"><b>${b}</b><small>${s}</small></div>`).join('');
+}
+
+// ---- 2D sections ----
+function section(svg, g, living) {
+  const S = 50, pad = 34, W = g.W;
+  const outerUnder = (x) => H + (Math.min(x, W - x) - T) * g.tan;   // x from the south outer face
+  const top = outerUnder(W / 2) + BUILD / Math.cos(g.pitch * Math.PI / 180) + 0.4;
+  const vw = (W + 2 * OVER) * S + 2 * pad, vh = (top + 0.8) * S + pad;
+  const X = (x) => pad + (x + OVER) * S, Y = (y) => pad + (top - y) * S;
+  const pts = (a) => a.map(([x, y]) => `${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join(' ');
+  const poly = (a, fill, extra = '') => `<polygon points="${pts(a)}" fill="${fill}" ${extra}/>`;
+  const buildV = BUILD / Math.cos(g.pitch * Math.PI / 180);
+  let s = '';
+
+  // roof
+  const e0 = -OVER, e1 = W + OVER;
+  s += poly([[e0, outerUnder(e0)], [W / 2, outerUnder(W / 2)], [e1, outerUnder(e1)], [e1, outerUnder(e1) + buildV], [W / 2, outerUnder(W / 2) + buildV], [e0, outerUnder(e0) + buildV]], 'var(--roof)');
+  // floor slab and ground
+  s += poly([[0, -0.3], [W, -0.3], [W, 0], [0, 0]], 'var(--wall)');
+  s += `<line x1="${X(e0 - 0.2)}" y1="${Y(-0.3)}" x2="${X(e1 + 0.2)}" y2="${Y(-0.3)}" stroke="var(--muted)" stroke-width="1"/>`;
+  // outer walls, cut to the roof
+  s += poly([[0, 0], [T, 0], [T, H], [0, H - T * g.tan]], 'var(--wall)');
+  s += poly([[W - T, 0], [W, 0], [W, H - T * g.tan], [W - T, H]], 'var(--wall)');
+
+  const xi = T, xn = W - T, xr = W / 2;
+  const attic = (xa) => {
+    // attic above the flat ceiling from xa to the north wall
+    const y0 = H + CEIL;
+    const xb = xn - CEIL / g.tan;
+    if (xa >= xb) return '';
+    const a = [[xa, y0], [xb, y0]];
+    if (xa < xr) a.push([xr, outerUnder(xr)]);
+    a.push([xa, outerUnder(xa)]);
+    return poly(a, 'var(--attic)');
+  };
+
+  if (living) {
+    const xp = xi + g.d;                       // partition south face
+    const liv = [[xi, 0], [xp, 0], [xp, outerUnder(xp)]];
+    if (xp > xr) liv.push([xr, outerUnder(xr)]);
+    liv.push([xi, H]);
+    s += poly(liv, 'var(--living)');
+    s += poly([[xp + PART, 0], [xn, 0], [xn, H], [xp + PART, H]], 'var(--rooms)');
+    s += poly([[xp + PART, H], [xn, H], [xn, H + CEIL], [xp + PART, H + CEIL]], 'var(--wall)', 'opacity="0.55"');
+    s += attic(xp + PART);
+    s += poly([[xp, 0], [xp + PART, 0], [xp + PART, outerUnder(xp + PART)], [xp, outerUnder(xp)]], 'var(--wall)');
+    // glazing
+    s += `<line x1="${X(T / 2)}" y1="${Y(0.05)}" x2="${X(T / 2)}" y2="${Y(2.45)}" stroke="var(--glass)" stroke-width="5"/>`;
+    // labels
+    s += `<text class="lbl" x="${X(xi + 0.3)}" y="${Y(0.9)}">living + kitchen</text>`;
+    s += `<text class="lbl mut" x="${X(xp + PART + 0.2)}" y="${Y(1.5)}">bath, pantry,</text>`;
+    s += `<text class="lbl mut" x="${X(xp + PART + 0.2)}" y="${Y(1.1)}">laundry…</text>`;
+    // heights
+    const hp = outerUnder(xp);
+    s += `<text x="${X(xi + 0.12)}" y="${Y(H) + 18}">${fmt(H, 1)}</text>`;
+    s += `<text x="${X(xp) - 44}" y="${Y(hp) + 18}">${fmt(hp, 1)}</text>`;
+    if (xp > xr) s += `<text x="${X(xr) - 20}" y="${Y(outerUnder(xr)) + 18}">${fmt(g.ridge, 1)}</text>`;
+    // depth dimension
+    const yd = -0.3 - 0.35;
+    s += `<line x1="${X(xi)}" y1="${Y(yd)}" x2="${X(xp)}" y2="${Y(yd)}" stroke="var(--ink)" stroke-width="1"/>`;
+    s += `<text x="${(X(xi) + X(xp)) / 2 - 22}" y="${Y(yd) + 16}">${fmt(g.d, 2)}</text>`;
+    s += person(X(xi + 1.2), Y(0), S);
+  } else {
+    s += poly([[xi, 0], [xn, 0], [xn, H], [xi, H]], 'var(--rooms)');
+    s += poly([[xi, H], [xn, H], [xn, H + CEIL], [xi, H + CEIL]], 'var(--wall)', 'opacity="0.55"');
+    s += attic(xi);
+    // walkable strip
+    const y0 = H + CEIL, yw = y0 + WALK, half = g.walkW / 2;
+    if (half > 0) {
+      s += poly([[xr - half, y0], [xr + half, y0], [xr + half, yw], [xr - half, yw]], 'var(--walk)', 'opacity="0.85"');
+      s += `<text x="${X(xr) - 26}" y="${Y(y0) - 8}">${fmt(g.walkW, 1)}</text>`;
+    }
+    s += `<text class="lbl" x="${X(xr) - 22}" y="${Y(y0 + 0.2) - 2 - (half > 0 ? 18 : 0)}" ${half > 0 ? 'hidden' : ''}>attic</text>`;
+    s += `<text x="${X(xr) + 6}" y="${Y(outerUnder(xr)) + 18}">${fmt(g.headroom, 1)}</text>`;
+    s += `<text class="lbl mut" x="${X(xi + 0.3)}" y="${Y(1.3)}">bedroom</text>`;
+    s += `<text class="lbl mut" x="${X(xn - 2.4)}" y="${Y(1.3)}">bathroom</text>`;
+    s += `<text x="${X(xi + 0.12)}" y="${Y(H) + 18}">${fmt(H, 1)}</text>`;
+    s += person(X(xr + 0.3), Y(H + CEIL), S);
+  }
+  // compass
+  s += `<text class="lbl" x="${X(e0)}" y="${Y(-0.3) + 34}">S</text><text class="lbl" x="${X(e1) - 10}" y="${Y(-0.3) + 34}">N</text>`;
+  svg.setAttribute('viewBox', `0 0 ${vw.toFixed(0)} ${(vh + 18).toFixed(0)}`);
+  svg.innerHTML = s;
+}
+
+function person(x, yFloor, S) {
+  const h = 1.8 * S, hr = 0.12 * S;
+  return `<g fill="var(--ink)" opacity="0.8"><circle cx="${x}" cy="${yFloor - h + hr}" r="${hr}"/>` +
+    `<rect x="${x - 0.12 * S}" y="${yFloor - h + 2.2 * hr}" width="${0.24 * S}" height="${h - 2.2 * hr}" rx="${0.08 * S}"/></g>`;
+}
+
+
+// ---- 3D view (Plotly) ----
+// Model coordinates: x east along the south wall, y north, z up.
+// A wall is drawn in its own plane (a along it, b up) and cut into vertical
+// strips at every hole edge and kink, so each piece is a quad.
+function wallQuads(a0, a1, top, holes, kinks) {
+  const cuts = [...new Set([a0, a1, ...kinks, ...holes.flatMap((h) => [h.a0, h.a1])])]
+    .filter((a) => a >= a0 && a <= a1).sort((p, q) => p - q);
+  const quads = [];
+  for (let i = 0; i < cuts.length - 1; i++) {
+    const s0 = cuts[i], s1 = cuts[i + 1], mid = (s0 + s1) / 2;
+    const inside = holes.filter((h) => h.a0 <= mid && mid <= h.a1).sort((p, q) => p.b0 - q.b0);
+    let lo = [0, 0];
+    inside.forEach((h) => { quads.push([[s0, lo[0]], [s1, lo[1]], [s1, h.b0], [s0, h.b0]]); lo = [h.b1, h.b1]; });
+    quads.push([[s0, lo[0]], [s1, lo[1]], [s1, top(s1)], [s0, top(s0)]]);
+  }
+  return quads;
+}
+
+function meshTrace(quads3d, color, opacity = 1) {
+  const x = [], y = [], z = [], i = [], j = [], k = [];
+  quads3d.forEach((q) => {
+    const n = x.length;
+    q.forEach(([px, py, pz]) => { x.push(px); y.push(py); z.push(pz); });
+    i.push(n, n); j.push(n + 1, n + 2); k.push(n + 2, n + 3);
+  });
+  return { type: 'mesh3d', x, y, z, i, j, k, color, opacity, flatshading: true, hoverinfo: 'skip',
+    lighting: { ambient: 0.75, diffuse: 0.5, specular: 0.05 }, lightposition: { x: -500, y: -1000, z: 2000 } };
+}
+
+function lineTrace(segments, color, width) {
+  const x = [], y = [], z = [];
+  segments.forEach((s) => { s.forEach(([px, py, pz]) => { x.push(px); y.push(py); z.push(pz); }); x.push(null); y.push(null); z.push(null); });
+  return { type: 'scatter3d', mode: 'lines', x, y, z, line: { color, width }, hoverinfo: 'skip' };
+}
+
+const box = (x0, y0, z0, x1, y1, z1) => [
+  [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]], [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]],
+  [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]],
+  [[x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [x0, y0, z1]], [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]],
+];
+
+function traces3d(g) {
+  const L = g.L, d = g.d, yr = g.under, kinks = g.full ? [g.r] : [];
+  // south wall with portals: panes up to 3 m separated by 0.25 m piers
+  const glaz = Math.min(L - 1.4, 10), n = Math.ceil(glaz / 3), pane = (glaz - (n - 1) * 0.25) / n, start = (L - glaz) / 2;
+  const portals = [...Array(n)].map((_, i) => ({ a0: start + i * (pane + 0.25), a1: start + i * (pane + 0.25) + pane, b0: 0.03, b1: 2.45 }));
+  const eastWin = [{ a0: 0.5, a1: Math.min(3.0, d - 0.5), b0: 0.95, b1: 2.4 }];
+  const door = [{ a0: 1.2, a1: 2.1, b0: 0.02, b1: 2.1 }];
+
+  const south = wallQuads(0, L, () => H, portals, []).map((q) => q.map(([a, b]) => [a, 0, b]));
+  const east = wallQuads(0, d, yr, eastWin, kinks).map((q) => q.map(([a, b]) => [L, a, b]));
+  const north = wallQuads(0, L, () => yr(d), door, []).map((q) => q.map(([a, b]) => [a, d, b]));
+  const ceil = [[[0, 0, H], [L, 0, H], [L, Math.min(d, g.r), yr(Math.min(d, g.r))], [0, Math.min(d, g.r), yr(Math.min(d, g.r))]]];
+  if (g.full) ceil.push([[0, g.r, g.ridge], [L, g.r, g.ridge], [L, d, yr(d)], [0, d, yr(d)]]);
+  const floor = [[[0, 0, 0], [L, 0, 0], [L, d, 0], [0, d, 0]]];
+  const ix = L - 3.2, iy = Math.min(d * 0.55, d - 1.3);
+  const px = L * 0.45, py = 1.4;
+
+  // outline of the room and its openings, so the shape reads at any angle
+  const prof = [[0, 0], [d, 0], [d, yr(d)], ...(g.full ? [[g.r, g.ridge]] : []), [0, H], [0, 0]];
+  const edges = [
+    prof.map(([a, b]) => [0, a, b]), prof.map(([a, b]) => [L, a, b]),
+    [[0, 0, 0], [L, 0, 0]], [[0, d, 0], [L, d, 0]], [[0, 0, H], [L, 0, H]], [[0, d, yr(d)], [L, d, yr(d)]],
+    ...(g.full ? [[[0, g.r, g.ridge], [L, g.r, g.ridge]]] : []),
+    ...portals.map((p) => [[p.a0, 0, p.b0], [p.a1, 0, p.b0], [p.a1, 0, p.b1], [p.a0, 0, p.b1], [p.a0, 0, p.b0]]),
+    ...eastWin.map((p) => [[L, p.a0, p.b0], [L, p.a1, p.b0], [L, p.a1, p.b1], [L, p.a0, p.b1], [L, p.a0, p.b0]]),
+  ];
+  const glass = [...portals.map((p) => [[p.a0, 0, p.b0], [p.a1, 0, p.b0], [p.a1, 0, p.b1], [p.a0, 0, p.b1]]),
+    ...eastWin.map((p) => [[L, p.a0, p.b0], [L, p.a1, p.b0], [L, p.a1, p.b1], [L, p.a0, p.b1]])];
+
+  return [
+    meshTrace(floor, '#b99672'),
+    meshTrace([...south, ...east, ...north], '#f3f1ec'),
+    meshTrace(ceil, '#d9c3a0'),
+    meshTrace(glass, '#7fb6e0', 0.25),
+    meshTrace(box(ix - 1.2, iy - 0.5, 0, ix + 1.2, iy + 0.5, 0.9), '#6f7c80'),
+    lineTrace(edges, '#55605f', 3),
+    lineTrace([[[px, py, 0], [px, py, 1.55]]], '#3b4a52', 14),
+    { type: 'scatter3d', mode: 'markers', x: [px], y: [py], z: [1.67], marker: { size: 7, color: '#3b4a52' }, hoverinfo: 'skip' },
+  ];
+}
+
+function draw3d(g) {
+  const axis = { visible: false };
+  Plotly.react('view3d', traces3d(g), {
+    margin: { l: 0, r: 0, t: 0, b: 0 },
+    showlegend: false,
+    paper_bgcolor: '#dfe7ea',
+    scene: {
+      xaxis: axis, yaxis: axis, zaxis: axis, aspectmode: 'data',
+      // from the open west end, a little south and above: the room reads like the cross-section
+      camera: { eye: { x: -1.5, y: -0.5, z: 0.35 }, center: { x: 0, y: 0, z: -0.1 } },
+    },
+    uirevision: 'keep-camera',
+  }, { displaylogo: false, responsive: true });
+}
+
+// ---- wiring ----
+function update() {
+  const g = geom();
+  $('depth-v').textContent = `${fmt(g.d, 2)} m`;
+  $('width-v').textContent = `${fmt(g.W, 1)} m`;
+  $('pitch-v').textContent = `${g.pitch}°`;
+  $('p-one').setAttribute('aria-pressed', String(!g.full));
+  $('p-full').setAttribute('aria-pressed', String(g.full));
+  facts(g);
+  section($('secA'), g, true);
+  section($('secB'), g, false);
+  if (window.Plotly) draw3d(g); else $('view3d').textContent = 'The 3D view needs an internet connection to load Plotly.';
+}
+$('p-one').addEventListener('click', () => { $('depth').value = (geom().r - PART / 2).toFixed(2); update(); });
+$('p-full').addEventListener('click', () => { $('depth').value = '6.0'; update(); });
+['depth', 'width', 'pitch'].forEach((id) => $(id).addEventListener('input', update));
+$('depth').value = '6.0';
+update();
+</script>
+</body>
+</html>
