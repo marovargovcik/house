@@ -8,9 +8,8 @@ morning sun. Other rooms fill the north-east corner behind it.
 
 - **Footprint:** a plain rectangle. The plot sets its length at about 19–21 m
   (below); the width is whatever the room list needs. Report both.
-- **Placement** (variant 5): east wall
-  40,9 m up the slope lines, as far east as the 2,8 m shed allows with 2 m to
-  the east boundary. Terrace 7,5 × 3 m exactly along the living room portals,
+- **Placement** (variant 5): east wall 40,9 m up the slope lines, as far east
+  as the 2,8 m shed allows with 2 m to the east boundary. Terrace 7,5 × 3 m exactly along the living room portals,
   32,7–40,2 m, centred on 36,5 m. Living level 273,9, level with the ground at
   the east wall; garage floor 271,2, 2,7 m below. The driveway is dug down up
   to 0,6 m over its last ~5 m, with sloped banks. About 45 m³ of the soil dug
@@ -36,9 +35,7 @@ morning sun. Other rooms fill the north-east corner behind it.
   sun.
 - **Big kids room** at the **west** end, big window on the west wall,
   splittable later into two rooms.
-- **Front door** on the south side, just east of the kids room. The stairs from
-  the garage land in the entrance hall or directly across from it; each variant
-  decides.
+- **Front door** on the south side, just east of the kids room.
 - **Práčovňa** on this level, about 6–7 m²: washer, dryer, a big freezer and a
   drying rack; small window on the north.
 - It sits a short walk from the master bedroom and the kids room, and the walk
@@ -53,9 +50,7 @@ morning sun. Other rooms fill the north-east corner behind it.
 ## What it overrides in `general-rules.md`
 
 - **Living + kitchen + dining** is 52–60 m² instead of 50–55.
-- **South glazing:** the living room's 6–8 m replaces the 8–10 m for the whole
-  facade; the bedrooms keep their ordinary south windows.
-- **East windows** are wanted in the living room, south of the shed.
-- **165–170 m² net** instead of 160 or more.
+- **South glazing:** 6–8 m in the living room instead of roughly 6–10.
+- **165–170 m² net** instead of 160–170.
 - **Kitchen daylight:** roof windows in the north slope only where that slope
   inside the room is wide enough for them; otherwise from the east wall.

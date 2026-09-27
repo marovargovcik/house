@@ -2,8 +2,8 @@
 
 Floor-plan variants for a self-build house on a sloped plot near Trenčín. The
 rules here hold for every idea. Each idea lives in its own folder under
-`ideas/`, with a `rules.md` that sets its boundaries and its variants next to
-it.
+`ideas/`, with a `rules.md` that sets its load-bearing rules and its variants
+next to it.
 
 ## How to use
 
@@ -18,15 +18,49 @@ it.
 - A new idea is a new folder with a `rules.md`: one line naming the idea, its
   rules, and what it overrides here.
 
+## The goal
+
+- Find which rooms, at which sizes, fit on which footprint. Expect many
+  iterations; I decide which directions are worth exploring further. 3D
+  rendering comes later, in Sweet Home 3D.
+- The cheapest house we'll be happy with. A compact plain rectangle beats any
+  bump-out.
+- **No fixed house dimensions here.** Each idea sets the house's width, length,
+  heights, where the garage starts and where the house sits on the plot. Each
+  variant reports them.
+
+## The plot
+
+Read off the survey in `terrain/`, in metres up the slope lines from point 115
+by the road.
+
+- The long axis runs west–east: the road and the downhill end are **west**,
+  uphill is **east**.
+- The slope is steep at 17,5–25 m up the lines (12–21°), gentle elsewhere
+  (4–7°).
+- **The view** is south, over the plot's upper southern strip, about 26,6–46 m
+  up the lines. West of 26,6 m the neighbour's house and fence stand to the
+  south, so no living room window may sit there.
+- **North:** the house stays 2,5 m from the neighbour's fence (2 m is the legal
+  minimum).
+
 ## The building
 
-- One living level. Everything in the room list is on it.
-- Under its **western end**: garage for two cars and the utility room (heat
-  pump, tanks, HVAC), dug into the slope. The stairs up from there land on the
-  living level and must sit inside the garage's length (see
-  [Size and placement](#size-and-placement)).
-- **Attic:** cold storage reached by a loft ladder. No rooms, no staircase. Put
-  the hatch in a hall or storage room.
+- One living level. Everything in the room list is on it, the laundry too.
+- Under its **western end**, dug into the slope: a garage for two cars side by
+  side, the utility room (heat pump, tanks, HVAC) and the stairs, as deep as
+  these need. The stairs land on the living level inside the garage's length.
+- **The garage floor sits about 2,7 m below the living level**: garage
+  headroom plus the floor. The driveway is dug down to it where the ground at
+  the door is higher; the higher the living level, the less is dug out.
+- **Use the soil dug out on site** to make a gentle transition from the house
+  to the garden, ideally one step or none from the terrace and the front door.
+- **The terrace runs exactly along the living room's south glazing**, centred
+  on the view strip or east of that.
+- **Attic:** storage only, reached by a loft ladder. No rooms, no staircase.
+  Put the hatch in a hall or storage room. The ceiling is insulated, not the
+  roof, so the attic is cold. It is walkable: the roof pitch must give headroom
+  to walk upright along the ridge (`roof/` works that out).
 - **Living + kitchen + dining has an exposed A roof**, insulated at roof level,
   open to the ridge. That part has no attic above it. Everything else has a flat
   ceiling with the cold attic over it. The wall between the two goes up to the
@@ -35,43 +69,15 @@ it.
   north slope — the south side already carries the portals and would overheat.
   Elsewhere a roof window would open into the cold attic, so it does not count
   as daylight.
-- Long axis runs west–east: the road and the downhill end are **west**, uphill
-  is **east**.
-- **East:** a shed leans against this wall. It will not span the full width, so
-  a smaller window is fine here.
-- **North:** the neighbour's fence is 2.5 m away. Small, slim or high-set
+- **East:** a shed leans against part of this wall. The living room gets a
+  smaller east window for the morning sun.
+- **North:** the neighbours and the fence are close. Small, slim or high-set
   windows only.
-- **South:** the view, the terrace and the main glazing. **8–10 m of glazed
-  wall in total on this side**, in one opening or several.
+- **South:** the view, the terrace and the main glazing, most of it in the
+  living room's south wall — roughly 6–10 m, in one opening or several.
 - **West:** faces the road, ordinary windows are fine.
 - Brick. Exterior wall 0.44 m, interior bearing 0.25 m, partitions 0.15 m. All
   areas are net, walls excluded.
-- A plain rectangle. Cheaper is better: a compact rectangle beats any bump-out.
-
-## Size and placement
-
-Each idea's `rules.md` sets the house's **width**, **length** and **where the
-garage starts**, in metres up the slope lines from point 115 by the road, as in
-`terrain/`. Where an idea leaves one out: 10 m wide, as long as the rooms need,
-back wall as far east as the shed allows. Each variant reports all three.
-
-- **The garage floor is 2,7 m below the living level.** The living level comes
-  from the step rule below; the garage floor follows it, and the driveway is
-  dug down to it where the ground at the door is higher. The higher the living
-  level, the less is dug out. The steep step is 17,5–25 m up the lines.
-- **Garage + utility depth follows the width**, keeping the same floor area:
-  about 9 m at 10 m wide, 10,5 m at 8 m, 11 m at 7,5 m.
-- **At most one step down to the garden**, about 17 cm, from the terrace and
-  the front door. Where the ground next to the house is lower, it is raised
-  with soil dug out on site. The living level sits no higher than the ground
-  at the east wall.
-- **Back wall as far east as the shed allows**, about 40,9 m: the 2,8 m shed
-  goes behind it and stays 2 m from the east boundary.
-- **The terrace runs exactly along the living room's south glazing**, centred
-  on about 36,4 m up the lines or east of that. 36,4 m is the middle of the
-  plot's southern part (26,6–46 m), where the view is. West of 26,6 m the
-  neighbour's house and fence stand to the south, so no living room window may
-  sit there.
 
 ## Rooms
 
@@ -80,28 +86,28 @@ back wall as far east as the shed allows. Each variant reports all three.
 | Living + kitchen + dining | 50–55 | one open space, island, wood stove |
 | Pantry | 4–5 | opens off the kitchen |
 | Kids room, big | 25–35 | splittable later into two rooms |
-| Second kids room / guest / office | 11–13 | door and window |
+| Second kids room / guest / office | 11–13 | door and window; as small as still comfortable for a guest or for work |
 | Master bedroom | 15–20 | wardrobe wall, or a small walk-in if it fits |
 | En-suite | 5–6 | shower, WC, basin — no tub |
 | Bathroom | 8 | tub and shower |
 | WC | 2 | separate |
-| Laundry | 5–7 | washer, dryer, drying rack, folding table, room for a freezer |
+| Laundry | 5–7 | washer, dryer, drying rack, folding table, cleaning supplies, room for a freezer |
 | Entrance hall | as small as the layout allows | wardrobe, shoe rack, mirror |
 
 The m² are rough guidance, ±15%. Deviate where common sense says so and say why.
-Circulation and the stairwell come on top. Total net floor area on this level
-should land at **160 m² or more**, garage, terrace and shed excluded.
+Total net floor area on this level lands at **160–170 m²**, circulation and the
+stairwell included; garage, terrace and shed excluded.
 
 ## Wishes
 
 - Bathroom, WC, en-suite and laundry grouped as close as possible to each other
   and over or near the utility room below, to keep drains and wiring short.
 - Bedrooms and kids rooms as far from the living room as the plan allows.
-- The **stairs from the garage arrive in the entrance hall**, not in a corridor.
+- The **stairs from the garage arrive in the entrance hall** or directly across
+  from it, not in a corridor.
 - The **en-suite never shares a wall with the living room.** Put it on the far
   side of the bedroom. A walk-in closet between the bedroom and the living room
   is a welcome buffer.
-- The **laundry is on this level**, not down in the utility room.
 - The **WC is a narrow slot**, about 1,00–1,20 × 1,80 m, with a small basin,
   right next to the bathroom. The bathroom wraps around behind it, and that
   corner takes the basin and the cabinets.
@@ -109,17 +115,19 @@ should land at **160 m² or more**, garage, terrace and shed excluded.
   windows in the north slope. Light from the south glazing reaches only 5–6 m
   into the room.
 - No glazed triangle in the east gable — roof windows do the same job quietly.
+- Worth exploring, not a rule: the big kids room facing west and south, with
+  the master bedroom across from it in the north-west corner (as in
+  `living-room-south-east/variant-5.html`).
 
 ## Rules
 
 - **No walk-through rooms.** Every room opens off a hall, the entrance or the
-  living space.
-- A central corridor with rooms on both sides is fine; a layout that avoids a
-  corridor without creating walk-through rooms is just as welcome.
+  living space. The one exception: the en-suite may be reached through the
+  master bedroom's walk-in closet.
+- As little corridor and hallway as possible. Without walk-through rooms every
+  variant still needs some.
 - The big kids room must be splittable later into two rooms, each keeping a
   window and able to get its own door.
-- Rooms allowed to face north: bathroom, WC, laundry, pantry, hall, and as a
-  last resort the guest room.
 - Slovak minimum room sizes and window-to-floor ratios apply. Escape windows do
   not.
 - No bathroom opening off the kitchen, no windowless habitable rooms.
@@ -134,7 +142,6 @@ idea's `rules.md` gives its own list:
 - corridor spine versus a hall used as a hub versus circulation through the
   living space,
 - which end the master bedroom is at,
-- laundry on this level versus down in the utility room,
 - the proportions of the rectangle: wide and short versus narrow and long.
 
 ## Output
@@ -180,6 +187,5 @@ its own.
   living space — put the numbers on the table, pick one, and name the
   alternative.
 - Do not rank the variants or argue which is best. That call is mine.
-- `answers.txt` holds my original answers to the questionnaire.
 - `house-with-atelier-monmar-plan.md` is an architect's plan for a different
   plot, kept as a taste reference: 161.5 m² of interior on one level.
