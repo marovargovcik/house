@@ -8,7 +8,7 @@ morning sun. Other rooms fill the north-east corner behind it.
 
 - **Footprint:** a plain rectangle. The plot sets its length at about 19–21 m
   (below); the width is whatever the room list needs. Report both.
-- **Placement** (variant 5, see `terrain/placed-south-east.html`): east wall
+- **Placement** (variant 5): east wall
   40,9 m up the slope lines, as far east as the 2,8 m shed allows with 2 m to
   the east boundary. Terrace 7,5 × 3 m exactly along the living room portals,
   32,7–40,2 m, centred on 36,5 m. Living level 273,9, level with the ground at

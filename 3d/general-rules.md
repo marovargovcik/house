@@ -7,8 +7,8 @@ it.
 
 ## How to use
 
-- A request names an idea: "three variants in `living-room-full-east`" or
-  "iterate on `ideas/living-room-full-east/variant-1.html`".
+- A request names an idea: "three variants in `living-room-south-east`" or
+  "iterate on `ideas/living-room-south-east/variant-5.html`".
 - Read this file, then that idea's `rules.md`. Ignore the other ideas.
 - **The idea wins.** Where its `rules.md` overrides something here, follow the
   idea.
@@ -141,8 +141,8 @@ idea's `rules.md` gives its own list:
 
 One self-contained `variant-N.html` per variant in the idea's folder, **in
 Slovak** — labels, table, headings and notes.
-`ideas/living-room-full-east/variant-1.html` is the worked example: match its
-drawing conventions, but leave out its furniture. Use these names: Obývacia izba s
+`ideas/living-room-south-east/variant-5.html` is the worked example: match its
+drawing conventions, with no furniture. Use these names: Obývacia izba s
 kuchyňou a jedálňou, Špajza, Detská izba, Hosťovská izba / pracovňa, Spálňa,
 Kúpeľňa pri spálni, Kúpeľňa, WC, Práčovňa, Zádverie, Chodba, Schodisko, Šatník,
 Komora, Terasa, Garáž, Technická miestnosť.
