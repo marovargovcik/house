@@ -7,7 +7,8 @@ The surveyor's measurement of parcel 1561/1. Read-only.
   is (boundary corner, fence, tree, road).
 
 Y and X are S-JTSK. Heights are metres above sea level (Bpv). A point with height
-0.00 marks a position only, not the ground.
+0.00 marks a position only, not the ground. Few points lie under the back half
+of the house and the middle of the south strip, so heights there are rough.
 
 ## Plot frame
 

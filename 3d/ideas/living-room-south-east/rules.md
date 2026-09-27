@@ -8,14 +8,15 @@ morning sun. Other rooms fill the north-east corner behind it.
 
 - **Footprint:** a plain rectangle. The plot sets its length at about 19–21 m
   (below); the width is whatever the room list needs. Report both.
-- **Placement** (variant 5): east wall 40,9 m up the slope lines, as far east
-  as the 2,8 m shed allows with 2 m to the east boundary. Terrace 7,5 × 3 m exactly along the living room portals,
-  32,7–40,2 m, centred on 36,5 m. Living level 273,9, level with the ground at
-  the east wall; garage floor 271,2, 2,7 m below. The driveway is dug down up
-  to 0,6 m over its last ~5 m, with sloped banks. About 45 m³ of the soil dug
-  out is spread round the house, up to 1,1 m high, to one step under the
-  floor: 3 m round the living part and 4 m more in front of the terrace. The
-  terrace and the front door open onto it with one step.
+- **Placement:** long axis along the slope lines. Garage door wall 18,9 m up
+  the lines, east wall 39,05 m, 2,5 m from the north boundary; the living room
+  is centred on the south strip's centre line. Living level 273,40, 0,1–0,4 m
+  under the ground at the east wall; garage floor 270,70, 2,7 m below, with
+  garage and utility 9 m deep. The ground at the garage door is 0–0,6 m above
+  its floor. Shed 7 × 2,8 m against the east wall from the north corner,
+  3,8 m from the east boundary. Terrace 7,5 × 3 m along the living room
+  portals; the ground in front of it is up to 0,7 m below the floor, raised
+  with soil dug out on site. About 340 m³ dug out, footings included.
 - **Living + kitchen + dining** in the south-east corner, **52–60 m²**:
   5,5–6,5 m deep (north–south) and 7–9 m long (west–east).
 - **Its windows:** 6–8 m of glazing and the terrace door in the south wall,

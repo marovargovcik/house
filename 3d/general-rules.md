@@ -38,11 +38,17 @@ by the road.
   uphill is **east**.
 - The slope is steep at 17,5–25 m up the lines (12–21°), gentle elsewhere
   (4–7°).
-- **The view** is south, over the plot's upper southern strip, about 26,6–46 m
-  up the lines. West of 26,6 m the neighbour's house and fence stand to the
-  south, so no living room window may sit there.
+- **The view** is down the plot's south strip. Its centre line meets the
+  house's south wall about 35 m up the lines. West of 26,6 m the neighbour's
+  house and fence stand to the south, so no living room window may sit there.
+- **True north** is 5° off the survey grid: "south" in these rules is the
+  strip's direction, and the south glazing really faces SSW (about 199°).
 - **North:** the house stays 2,5 m from the neighbour's fence (2 m is the legal
   minimum).
+- **West:** the road edge in front of the garage is at about 268,2; the
+  driveway climbs to the garage door at about 10 %.
+- **Sewer:** manholes along the field strip south-east of the plot, covers at
+  about 274. The lower level will likely need a pump.
 
 ## The building
 
@@ -56,7 +62,7 @@ by the road.
 - **Use the soil dug out on site** to make a gentle transition from the house
   to the garden, ideally one step or none from the terrace and the front door.
 - **The terrace runs exactly along the living room's south glazing**, centred
-  on the view strip or east of that.
+  on the south strip's centre line.
 - **Attic:** storage only, reached by a loft ladder. No rooms, no staircase.
   Put the hatch in a hall or storage room. The ceiling is insulated, not the
   roof, so the attic is cold. It is walkable: the roof pitch must give headroom
@@ -69,7 +75,8 @@ by the road.
   north slope — the south side already carries the portals and would overheat.
   Elsewhere a roof window would open into the cold attic, so it does not count
   as daylight.
-- **East:** a shed leans against part of this wall. The living room gets a
+- **East:** a shed of about 18–20 m² leans against this wall from the north
+  corner. It stops short of the south end, where the living room gets a
   smaller east window for the morning sun.
 - **North:** the neighbours and the fence are close. Small, slim or high-set
   windows only.
@@ -118,6 +125,8 @@ stairwell included; garage, terrace and shed excluded.
 - Worth exploring, not a rule: the big kids room facing west and south, with
   the master bedroom across from it in the north-west corner (as in
   `living-room-south-east/variant-5.html`).
+- Worth exploring: corner glazing at the living room's south-east corner; an
+  overhang or exterior blinds on the south glazing.
 
 ## Rules
 
@@ -189,3 +198,14 @@ its own.
 - Do not rank the variants or argue which is best. That call is mine.
 - `house-with-atelier-monmar-plan.md` is an architect's plan for a different
   plot, kept as a taste reference: 161.5 m² of interior on one level.
+
+## Not settled yet
+
+- Geological survey (soil, rock, groundwater) before the levels are fixed.
+- Re-survey under the back half of the house.
+- 2,5 m to the north boundary against the zoning plan (ÚPN), the distance
+  between houses and fire rules.
+- Zoning of parcels 1563/3 and 1557, either side of the south strip: building
+  there could block the side views.
+- Sewer depth and the pump.
+- Drainage at the garage door; waterproofing and drainage on the buried walls.
