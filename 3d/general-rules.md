@@ -38,9 +38,12 @@ by the road.
   uphill is **east**.
 - The slope is steep at 17,5–25 m up the lines (12–21°), gentle elsewhere
   (4–7°).
-- **The view** is down the plot's south strip. Its centre line meets the
-  house's south wall about 35 m up the lines. West of 26,6 m the neighbour's
-  house and fence stand to the south, so no living room window may sit there.
+- **The fence is the plot's boundary.** On the east it takes in a thin second
+  land-registry parcel, so parcel 1561/1 alone ends about 2,5 m inside it.
+- **The view** is down the plot's south strip, 26,6–46 m up the lines along
+  the house's south wall; its middle is about 36,3 m. West of 26,6 m the
+  neighbour's house and fence stand to the south, so no living room window may
+  sit there.
 - **True north** is 5° off the survey grid: "south" in these rules is the
   strip's direction, and the south glazing really faces SSW (about 199°).
 - **North:** the house stays 2,5 m from the neighbour's fence (2 m is the legal
@@ -62,7 +65,7 @@ by the road.
 - **Use the soil dug out on site** to make a gentle transition from the house
   to the garden, ideally one step or none from the terrace and the front door.
 - **The terrace runs exactly along the living room's south glazing**, centred
-  on the south strip's centre line.
+  on the south strip's middle.
 - **Attic:** storage only, reached by a loft ladder. No rooms, no staircase.
   Put the hatch in a hall or storage room. The ceiling is insulated, not the
   roof, so the attic is cold. It is walkable: the roof pitch must give headroom
