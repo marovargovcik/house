@@ -68,7 +68,7 @@ The same inputs as a form, with the drawing, the table and a CSV download.
 
 ## Open questions
 
-- `--h-min`: 1.9 m until the Slovak norm for obytná plocha is confirmed.
+- `--h-min`: 1.9 m, headroom to walk upright in the storage attic.
 - `--roof-buildup` and `--floor-buildup`: 0.30 and 0.20 m until the projektant's
   section drawing. They change the attic area the most.
 - Klieština: is there one, and how high? It must sit at least `--h-min` +
